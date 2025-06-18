@@ -1,0 +1,88 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+    color: #fff;
+}
+
+.landing-wrapper {
+    padding: 4rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+}
+
+.landing-header h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    color: white; }
+
+.tagline {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #f1f1f1;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.button-group a {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #5A67D8;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.button-group a:hover {
+    transform: scale(1.05);
+    background: #f0f4ff;
+}
+
+.features-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
+    padding: 0 1rem;
+}
+
+.feature-card {
+    background: white;
+    color: #333;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+}
+
+.feature-card h3 {
+    margin-bottom: 0.5rem;
+    color: #5A67D8;
+    font-size: 1.3rem;
+}
+
+.feature-card p {
+    font-size: 1rem;
+    color: #555;
+}
+
+.landing-footer {
+    text-align: center;
+    font-size: 1rem;
+    color: #ddd;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
