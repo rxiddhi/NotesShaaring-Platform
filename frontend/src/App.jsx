@@ -1,7 +1,5 @@
 import React from 'react'
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import Login from './Login'
 
 import NotesBrowsingPage from './NotesBrowsingPage'
 import NotesUploadPage from './components/NotesUploadPage'
@@ -13,10 +11,11 @@ import NotesUploadPage from './components/NotesUploadPage'
 //  from './SearchAndFilters'
 
 function App() {
-  const [count, setCount] = useState(0)
+
 
   return (
     <>
+    <Login/>
     <NotesBrowsingPage/>
     <NotesUploadPage/>
     {/* <NoteCard/>
@@ -25,7 +24,7 @@ function App() {
     <NotesStats/>
     <SearchAndFilters/> */}
 
-
+      
     </>
   )
 }
