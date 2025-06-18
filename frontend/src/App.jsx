@@ -4,6 +4,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 
 import NotesBrowsingPage from './NotesBrowsingPage'
+import NotesUploadPage from './components/NotesUploadPage'
 // import NoteCard from './NoteCard'
 // import NotesGrid from '../NotesGrid'
 // import NotesHeader from './NotesHeader'
@@ -17,6 +18,7 @@ function App() {
   return (
     <>
     <NotesBrowsingPage/>
+    <NotesUploadPage/>
     {/* <NoteCard/>
     <NotesGrid/>
     <NotesHeader/>
