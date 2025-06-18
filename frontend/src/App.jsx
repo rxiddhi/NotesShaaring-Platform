@@ -15,7 +15,7 @@ function App() {
 
   return (
     <>
-    {/* <Login/> */}
+    <Login/>
     <NotesBrowsingPage/>
     <NotesUploadPage/>
     <HomePage />
