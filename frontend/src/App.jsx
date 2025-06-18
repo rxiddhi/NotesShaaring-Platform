@@ -1,14 +1,29 @@
+import React from 'react'
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
-import './App.css'
+
+import NotesBrowsingPage from './NotesBrowsingPage'
+// import NoteCard from './NoteCard'
+// import NotesGrid from '../NotesGrid'
+// import NotesHeader from './NotesHeader'
+// import NotesStats from './NotesStats'
+// import SearchAndFilters
+//  from './SearchAndFilters'
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <>
-     <h1>hello</h1>
+    <NotesBrowsingPage/>
+    {/* <NoteCard/>
+    <NotesGrid/>
+    <NotesHeader/>
+    <NotesStats/>
+    <SearchAndFilters/> */}
+
+
     </>
   )
 }
