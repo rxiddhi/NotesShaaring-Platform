@@ -3,8 +3,15 @@ import '../styles/HomePage.css';
 const HomePage = () => {
   return (
     <div className="landing-wrapper">
+      <nav className="top-nav">
+        <div className="logo-text">NoteNest</div>
+        <div className="nav-buttons">
+          <a href="/login" className="nav-btn">Login</a>
+        </div>
+      </nav>
+
       <header className="landing-header">
-        <h1>Browse Notes</h1>
+        <h1 className="landing-title">Browse Notes Effortlessly</h1>
         <p className="tagline">
           Discover, download, and share notes tailored for your curriculum.
         </p>
@@ -18,30 +25,26 @@ const HomePage = () => {
       </div>
 
       <section className="features-section">
-        <div className="feature-card">
-          <h3>Smart Search</h3>
-          <p>Quickly find notes by title, author, or subject using an intuitive search bar.</p>
+        <div className="feature-card styled-card">
+          <h3 className="card-heading">Smart Search</h3>
+          <p className="card-subtext">Quickly find notes by title, author, or subject using an intuitive search bar.</p>
         </div>
 
-        <div className="feature-card">
-          <h3>Subject Filters</h3>
-          <p>Filter notes based on your semester subjects like DSA, WAP, Math, PSP and more.</p>
+        <div className="feature-card styled-card">
+          <h3 className="card-heading">Subject Filters</h3>
+          <p className="card-subtext">Filter notes based on your semester subjects like DSA, WAP, Math, PSP and more.</p>
         </div>
 
-        <div className="feature-card">
-          <h3>Sort & Organize</h3>
-          <p>Sort notes by popularity, upload date, or alphabetical order with just a click.</p>
+        <div className="feature-card styled-card">
+          <h3 className="card-heading">Sort & Organize</h3>
+          <p className="card-subtext">Sort notes by popularity, upload date, or alphabetical order with just a click.</p>
         </div>
 
-        <div className="feature-card">
-          <h3>Quick View</h3>
-          <p>Preview notes before downloading and make informed choices.</p>
+        <div className="feature-card styled-card">
+          <h3 className="card-heading">Quick View</h3>
+          <p className="card-subtext">Preview notes before downloading and make informed choices.</p>
         </div>
 
-        <div className="feature-card">
-          <h3>Secure Downloads</h3>
-          <p>All documents are stored safely and download-ready for your use.</p>
-        </div>
       </section>
 
       <footer className="landing-footer">
