@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import Navbar from "./Navbar";
 
 export default function NotesUploadPage() {
   const [title, setTitle] = useState("");
