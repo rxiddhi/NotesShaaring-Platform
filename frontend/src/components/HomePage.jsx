@@ -7,8 +7,14 @@ const HomePage = () => {
         <div className="logo-text">NoteNest</div>
         <div className="nav-buttons">
           <a href="/login" className="nav-btn">Login</a>
+          <a href="/signup" className="nav-btn">Signup</a>
         </div>
       </nav>
+    </div>
+  );
+};
+
+export default HomePage;
 
       <header className="landing-header">
         <h1 className="landing-title">Browse Notes Effortlessly</h1>
