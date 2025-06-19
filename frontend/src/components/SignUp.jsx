@@ -76,7 +76,12 @@ export default function SignUp() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-pink-700">
+    <div
+      className="flex items-center justify-center min-h-screen"
+      style={{
+        background: 'linear-gradient(to bottom right, #f0e9ff, #e9d5ff, #fce7f3)',
+      }}
+    >
       <div className="bg-white p-8 rounded-3xl w-full max-w-md shadow-xl">
         <div className="flex justify-center mb-6">
           <div
@@ -121,6 +126,7 @@ export default function SignUp() {
               <p className="text-sm text-red-500 mt-1">{errors.username}</p>
             )}
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Email
@@ -139,6 +145,7 @@ export default function SignUp() {
               <p className="text-sm text-red-500 mt-1">{errors.email}</p>
             )}
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Password
@@ -167,7 +174,6 @@ export default function SignUp() {
             )}
           </div>
 
-       
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Confirm Password
@@ -198,7 +204,6 @@ export default function SignUp() {
             )}
           </div>
 
-   
           <button
             type="submit"
             className="w-full py-3 text-white font-semibold rounded-xl transition duration-300 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-indigo-600"

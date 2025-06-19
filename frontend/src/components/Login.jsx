@@ -29,7 +29,12 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-pink-700">
+    <div
+      className="flex items-center justify-center min-h-screen"
+      style={{
+        background: 'linear-gradient(to bottom right, #f0e9ff, #e9d5ff, #fce7f3)',
+      }}
+    >
       <div className="bg-white p-8 rounded-3xl w-full max-w-md shadow-xl">
         <div className="flex justify-center mb-6">
           <div

@@ -111,7 +111,7 @@ export default function NotesBrowsingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6 font-sans">
+  <div className="min-h-screen p-6 font-sans" style={{ background: 'linear-gradient(to bottom right, #f0e9ff, #e9d5ff, #fce7f3)' }}>
    <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-[#667EEA] to-[#764BA2] bg-clip-text text-transparent">
   Browse Notes
 </h1>
