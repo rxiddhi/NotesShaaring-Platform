@@ -3,6 +3,7 @@ import '../styles/HomePage.css';
 const HomePage = () => {
   return (
     <div className="landing-wrapper">
+      {/* Top Navigation */}
       <nav className="top-nav">
         <div className="logo-text">NoteNest</div>
         <div className="nav-buttons">
@@ -10,12 +11,8 @@ const HomePage = () => {
           <a href="/signup" className="nav-btn">Signup</a>
         </div>
       </nav>
-    </div>
-  );
-};
 
-export default HomePage;
-
+      {/* Header Section */}
       <header className="landing-header">
         <h1 className="landing-title">Browse Notes Effortlessly</h1>
         <p className="tagline">
@@ -23,6 +20,7 @@ export default HomePage;
         </p>
       </header>
 
+      {/* Button Group */}
       <div className="button-group">
         <a href="#search">Search Notes</a>
         <a href="#upload">Upload</a>
@@ -30,6 +28,7 @@ export default HomePage;
         <a href="#popular">Popular</a>
       </div>
 
+      {/* Features Section */}
       <section className="features-section">
         <div className="feature-card styled-card">
           <h3 className="card-heading">Smart Search</h3>
@@ -50,9 +49,9 @@ export default HomePage;
           <h3 className="card-heading">Quick View</h3>
           <p className="card-subtext">Preview notes before downloading and make informed choices.</p>
         </div>
-
       </section>
 
+      {/* Footer */}
       <footer className="landing-footer">
         <p>Built by students, for students. Start exploring your notes today!</p>
       </footer>
