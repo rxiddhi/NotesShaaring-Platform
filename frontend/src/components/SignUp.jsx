@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Navbar from "./Navbar";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({

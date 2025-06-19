@@ -1,16 +1,11 @@
+import { Link } from 'react-router-dom';
 import '../styles/HomePage.css';
+import Navbar from "./Navbar";
 
 const HomePage = () => {
   return (
-    <div className="landing-wrapper">
-      {/* Top Navigation */}
-      <nav className="top-nav">
-        <div className="logo-text">NoteNest</div>
-        <div className="nav-buttons">
-          <a href="/login" className="nav-btn">Login</a>
-          <a href="/signup" className="nav-btn">Signup</a>
-        </div>
-      </nav>
+    <>
+      <div className="landing-wrapper">
 
       {/* Header Section */}
       <header className="landing-header">
@@ -22,13 +17,13 @@ const HomePage = () => {
 
       {/* Button Group */}
       <div className="button-group">
-        <a href="#search">Search Notes</a>
-        <a href="#upload">Upload</a>
-        <a href="#categories">Subjects</a>
-        <a href="#popular">Popular</a>
+        <Link to="/browse" className="nav-btn">Browse Notes</Link>
+        <Link to="/upload" className="nav-btn">Upload Notes</Link>
+        <Link to="/notes" className="nav-btn">My Notes</Link>
       </div>
 
       {/* Features Section */}
+      <h2 className="features-heading">Features</h2>
       <section className="features-section">
         <div className="feature-card styled-card">
           <h3 className="card-heading">Smart Search</h3>
@@ -49,6 +44,16 @@ const HomePage = () => {
           <h3 className="card-heading">Quick View</h3>
           <p className="card-subtext">Preview notes before downloading and make informed choices.</p>
         </div>
+
+        <div className="feature-card styled-card">
+          <h3 className="card-heading">Save Favorites</h3>
+          <p className="card-subtext">Bookmark frequently used notes for quick access from your personal dashboard.</p>
+        </div>
+
+        <div className="feature-card styled-card">
+          <h3 className="card-heading">Auto-Sync</h3>
+          <p className="card-subtext">All your uploads and saved notes are automatically synced across your devices.</p>
+        </div>
       </section>
 
       {/* Footer */}
@@ -56,6 +61,7 @@ const HomePage = () => {
         <p>Built by students, for students. Start exploring your notes today!</p>
       </footer>
     </div>
+  </>
   );
 };
 
