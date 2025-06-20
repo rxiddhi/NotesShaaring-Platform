@@ -1,10 +1,9 @@
 body {
-    margin: 0;
-    padding: 0rem 0rem 0rem 20rem;
-    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-    font-family: "Segoe UI", sans-serif;
-    
-  }
+  margin: 0;
+  padding: 0rem 0rem 0rem 20rem;
+  background: linear-gradient(to bottom right, #f0e9ff, #e9d5ff, #fce7f3);
+  font-family: "Segoe UI", sans-serif;
+}
   
   
   .upload-box {
@@ -69,9 +68,8 @@ body {
     padding: 10px;
     border-radius: 6px;
     border: 1px solid #ccc;
-    background: #2d2d2d;
-    color: white;
-  }
+    background: white;
+    color: black; }
   
   
   input[type="file"] {
