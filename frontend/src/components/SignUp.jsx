@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import Navbar from "./Navbar";
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import Navbar from './Navbar';
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -58,18 +61,34 @@ export default function SignUp() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
 
     if (Object.keys(validationErrors).length === 0) {
-      console.log('Form submitted:', formData);
-      setFormData({
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      });
+      try {
+        const response = await axios.post(
+          'https://your-backend-api.com/api/signup', // Replace with actual API endpoint
+          {
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+          }
+        );
+
+        const { token } = response.data;
+
+        localStorage.setItem('token', token);
+
+        navigate('/browse');
+      } catch (error) {
+        console.error('Signup error:', error);
+        if (error.response?.data?.message) {
+          alert(error.response.data.message);
+        } else {
+          alert('Signup failed. Please try again.');
+        }
+      }
     } else {
       setErrors(validationErrors);
     }

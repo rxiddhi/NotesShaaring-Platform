@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import Navbar from "./Navbar";
-
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const validateEmail = (email) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -25,7 +27,27 @@ export default function Login() {
     }
 
     setError('');
-    console.log('Logging in:', { email, password });
+    try {
+      const response = await axios.post('https://your-backend-url.com/api/login', {
+        email,
+        password,
+      });
+
+      const { token } = response.data;
+
+      // Save JWT token to localStorage
+      localStorage.setItem('token', token);
+
+      // Navigate to a protected route (e.g., dashboard or /upload)
+      navigate('/upload');
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        setError('Invalid email or password.');
+      } else {
+        setError('Login failed. Please try again later.');
+      }
+      console.error(err);
+    }
   };
 
   return (
@@ -53,10 +75,10 @@ export default function Login() {
           </div>
         </div>
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
-          Welcome
+          Welcome Back
         </h2>
         <p className="text-sm text-center text-gray-500 mb-6">
-          Login in to access your notes
+          Log in to access your notes
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
