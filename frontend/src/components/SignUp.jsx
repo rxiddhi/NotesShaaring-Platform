@@ -82,9 +82,9 @@ export default function SignUp() {
 
         const { token } = response.data;
 
-        localStorage.setItem('token', token);
-
-        navigate('/browse');
+        // Redirect to login page after successful signup
+        alert('Signup successful! Please log in.');
+        navigate('/login');
       } catch (error) {
         console.error('Signup error:', error);
         if (error.response?.data?.message) {

@@ -28,7 +28,7 @@ export default function Login() {
     setError('');
 
     try {
-    const response = await axios.post('http://localhost:3000/api/login', {
+    const response = await axios.post('http://localhost:3000/api/auth/login', {
         email,
         password,
       });
@@ -36,6 +36,7 @@ export default function Login() {
       const { token } = response.data;
 
       localStorage.setItem('token', token);
+      alert('Login successful!');
       navigate('/upload');
     } catch (err) {
       if (err.response && err.response.status === 401) {
