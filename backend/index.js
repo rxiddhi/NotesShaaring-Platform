@@ -16,9 +16,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
+
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));
 
+// Add your login route
+app.use('/api', require('./routes/authRoutes'));
 
 // Basic route for testing
 app.get('/', (req, res) => {
