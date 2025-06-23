@@ -1,16 +1,27 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const connectDB = require('./config/db');
+
+// Connect to database
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Middleware
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
+
+// Define Routes
+app.use('/api/auth', require('./routes/auth'));
 
 // Add your login route
 app.use('/api', require('./routes/authRoutes'));
-
 
 // Basic route for testing
 app.get('/', (req, res) => {

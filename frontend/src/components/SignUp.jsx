@@ -15,6 +15,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [submissionError, setSubmissionError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,6 +29,9 @@ export default function SignUp() {
         ...prev,
         [name]: '',
       }));
+    }
+    if (submissionError) {
+      setSubmissionError('');
     }
   };
 
@@ -68,7 +72,7 @@ export default function SignUp() {
     if (Object.keys(validationErrors).length === 0) {
       try {
         const response = await axios.post(
-          'https://your-backend-api.com/api/signup', // Replace with actual API endpoint
+          'http://localhost:3000/api/auth/register', // 'https://your-backend-api.com/api/signup', // Replace with actual API endpoint
           {
             username: formData.username,
             email: formData.email,
