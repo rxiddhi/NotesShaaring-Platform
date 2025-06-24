@@ -3,15 +3,18 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware');
 
-// Protected route - Get current user data
+// Dummy user for testing
+const user = {
+  email: 'test@example.com',
+  password: '123456'
+};
+
 router.get('/me', authMiddleware, (req, res) => {
   res.json({
     message: 'This is protected user data',
     user: req.user
   });
 });
-
-// Protected route - Check upload access
 router.get('/upload', authMiddleware, (req, res) => {
   res.json({
     message: 'You are allowed to upload notes!',
