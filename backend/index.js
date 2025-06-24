@@ -1,12 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
-const connectDB = require('./config/db');
-const passport = require('passport');
-const initGooglePassport = require('./config/passport');
-
-// Connect to database
-connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,20 +21,27 @@ app.use(passport.initialize());
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));
 
-// Add your login route
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use('/api', require('./routes/authRoutes'));
 
-// Basic route for testing
+
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Notes Sharing Platform API' });
 });
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log('✅ MongoDB connected');
+      console.log(`🚀 Server is running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ MongoDB connection failed:', err);
+    process.exit(1); 
+  });
