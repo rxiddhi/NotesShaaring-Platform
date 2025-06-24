@@ -5,6 +5,8 @@ import Login from './components/Login';
 import SignUp from './components/SignUp';
 import NotesUploadPage from './components/NotesUploadPage';
 import NotesBrowsingPage from './components/NotesBrowsingPage';
+import NotesPage from "./pages/NotesPage"; 
+import AuthSuccess from './components/AuthSuccess'; 
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {

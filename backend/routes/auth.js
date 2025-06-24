@@ -1,103 +1,111 @@
+
 const express = require('express');
-const router = express.Router();
-const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+const User = require('../models/User');
+const router = express.Router();
 
-// @route   POST api/auth/register
-// @desc    Register user
-// @access  Public
-router.post('/register', async (req, res) => {
+
+router.post('/signup', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+    let { username, email, password } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    username = username.trim();
+    email = email.trim().toLowerCase();
 
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword,
-    });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email or username already in use' });
+    }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
     const token = jwt.sign(
-      { userId: newUser._id },
+      { id: newUser._id, username: newUser.username },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '1d' }
     );
 
-    res.status(201).json({ token });
+    res.status(201).json({
+      token,
+      user: { id: newUser._id, username: newUser.username, email: newUser.email },
+      message: 'User registered successfully',
+    });
   } catch (err) {
-    console.error('Registration error:', err);
+    console.error('Signup Error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// @route   POST api/auth/login
-// @desc    Login user
-// @access  Public
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Incorrect email or password.' });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
     }
+
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Incorrect email or password.' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
+
     const token = jwt.sign(
-      { userId: user._id },
+      { id: user._id, username: user.username },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '1d' }
     );
-    res.json({ token });
+
+    res.status(200).json({
+      token,
+      user: { id: user._id, username: user.username, email: user.email },
+      message: 'Login successful',
+    });
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('Login Error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Google OAuth SIGNUP
+
 router.get('/google-signup',
   passport.authenticate('google', { scope: ['profile', 'email'], state: 'signup' })
 );
 
-// Google OAuth LOGIN
 router.get('/google-login',
   passport.authenticate('google', { scope: ['profile', 'email'], state: 'login' })
 );
 
-// Google OAuth callback (handles both signup and login)
 router.get('/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   async (req, res) => {
-    // Check the state parameter to distinguish between signup and login
     const state = req.query.state;
     const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const token = jwt.sign(
+      { userId: req.user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
     if (state === 'signup') {
-      // Check if user already existed
       if (req.user && req.user._alreadyExists) {
         return res.redirect(`${redirectUrl}/login?signup=exists`);
       } else {
         return res.redirect(`${redirectUrl}/login?signup=success`);
       }
     } else {
-      // LOGIN: Issue JWT and redirect to frontend
-      const token = jwt.sign(
-        { userId: req.user._id },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' }
-      );
       return res.redirect(`${redirectUrl}/auth/success?token=${token}`);
     }
   }
