@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('signup') === 'success') {
+      setSuccess('Sign up successful! Please log in to continue.');
+    } else if (params.get('signup') === 'exists') {
+      setSuccess('User already exists. Please log in.');
+    }
+  }, [location.search]);
 
   const validateEmail = (email) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -28,15 +39,15 @@ export default function Login() {
     setError('');
 
     try {
-    const response = await axios.post('http://localhost:3000/api/login', {
+      const response = await axios.post('http://localhost:3000/api/auth/login', {
         email,
         password,
       });
 
       const { token } = response.data;
-
       localStorage.setItem('token', token);
-      navigate('/upload');
+      alert('Login successful!');
+      navigate('/');
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setError('Invalid email or password.');
@@ -71,6 +82,13 @@ export default function Login() {
             </svg>
           </div>
         </div>
+
+        {success && (
+          <div className="mb-4 text-green-600 text-center font-semibold">
+            {success}
+          </div>
+        )}
+
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
           Welcome Back
         </h2>
@@ -129,6 +147,22 @@ export default function Login() {
             LOGIN
           </button>
         </form>
+
+        <div className="flex flex-col items-center mt-4">
+          <button
+            onClick={() => {
+              window.location.href = 'http://localhost:3000/api/auth/google-login';
+            }}
+            className="w-full flex items-center justify-center gap-2 py-3 mt-2 text-gray-700 font-semibold rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition duration-300"
+          >
+            <img
+              src="https://developers.google.com/identity/images/g-logo.png"
+              alt="Google"
+              className="w-5 h-5"
+            />
+            Sign in with Google
+          </button>
+        </div>
 
         <p className="text-sm text-center text-gray-500 mt-6">
           Don't have an account?{' '}

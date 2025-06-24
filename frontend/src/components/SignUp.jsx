@@ -70,9 +70,10 @@ export default function SignUp() {
     const validationErrors = validateForm();
 
     if (Object.keys(validationErrors).length === 0) {
+      setLoading(true);
       try {
         const response = await axios.post(
-          'http://localhost:3000/api/auth/register', // 'https://your-backend-api.com/api/signup', // Replace with actual API endpoint
+          'http://localhost:3000/api/auth/register',
           {
             username: formData.username,
             email: formData.email,
@@ -80,11 +81,9 @@ export default function SignUp() {
           }
         );
 
-        const { token } = response.data;
-
-        localStorage.setItem('token', token);
-
-        navigate('/browse');
+        // Redirect to login page after successful signup
+        alert('Signup successful! Please log in.');
+        navigate('/login');
       } catch (error) {
         console.error('Signup error:', error);
         if (error.response?.data?.message) {
@@ -234,6 +233,18 @@ export default function SignUp() {
             Create Account
           </button>
         </form>
+
+        <div className="flex flex-col items-center mt-4">
+          <button
+            onClick={() => {
+              window.location.href = 'http://localhost:3000/api/auth/google-signup';
+            }}
+            className="w-full flex items-center justify-center gap-2 py-3 mt-2 text-gray-700 font-semibold rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition duration-300"
+          >
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="w-5 h-5" />
+            Sign up with Google
+          </button>
+        </div>
 
         <p className="text-sm text-center text-gray-500 mt-6">
           Already have an account?{' '}

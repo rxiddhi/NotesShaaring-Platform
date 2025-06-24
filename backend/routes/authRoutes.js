@@ -3,30 +3,15 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware');
 
-// Dummy user for testing
-const user = {
-  email: 'test@example.com',
-  password: '123456'
-};
-router.post('/login', (req, res) => {
-  const { email, password } = req.body;
-
-  if (email !== user.email || password !== user.password) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
-
-  const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: '1d'
-  });
-
-  res.json({ token });
-});
+// Protected route - Get current user data
 router.get('/me', authMiddleware, (req, res) => {
   res.json({
     message: 'This is protected user data',
     user: req.user
   });
 });
+
+// Protected route - Check upload access
 router.get('/upload', authMiddleware, (req, res) => {
   res.json({
     message: 'You are allowed to upload notes!',

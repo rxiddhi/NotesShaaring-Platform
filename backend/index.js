@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const connectDB = require('./config/db');
+const passport = require('passport');
+const initGooglePassport = require('./config/passport');
 
 // Connect to database
 connectDB();
@@ -17,10 +19,12 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Initialize passport
+initGooglePassport();
+app.use(passport.initialize());
+
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));
-
-// Add your login route
 app.use('/api', require('./routes/authRoutes'));
 
 // Basic route for testing
