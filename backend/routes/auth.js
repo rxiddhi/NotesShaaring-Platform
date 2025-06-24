@@ -81,18 +81,15 @@ router.get('/google-login',
 router.get('/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   async (req, res) => {
-    // Check the state parameter to distinguish between signup and login
     const state = req.query.state;
     const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     if (state === 'signup') {
-      // Check if user already existed
       if (req.user && req.user._alreadyExists) {
         return res.redirect(`${redirectUrl}/login?signup=exists`);
       } else {
         return res.redirect(`${redirectUrl}/login?signup=success`);
       }
     } else {
-      // LOGIN: Issue JWT and redirect to frontend
       const token = jwt.sign(
         { userId: req.user._id },
         process.env.JWT_SECRET,
