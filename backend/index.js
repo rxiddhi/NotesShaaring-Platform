@@ -25,6 +25,8 @@ app.use(passport.initialize());
 
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));
+
+// Add your login route
 app.use('/api', require('./routes/authRoutes'));
 
 // Basic route for testing
