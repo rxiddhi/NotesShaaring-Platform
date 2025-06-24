@@ -70,9 +70,10 @@ export default function SignUp() {
     const validationErrors = validateForm();
 
     if (Object.keys(validationErrors).length === 0) {
+      setLoading(true);
       try {
-        await axios.post(
-          'http://localhost:3000/api/auth/register', // 'https://your-backend-api.com/api/signup', // Replace with actual API endpoint
+        const response = await axios.post(
+          'http://localhost:3000/api/auth/register',
           {
             username: formData.username,
             email: formData.email,
