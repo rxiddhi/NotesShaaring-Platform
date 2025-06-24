@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -27,18 +26,16 @@ export default function Login() {
     }
 
     setError('');
+
     try {
-      const response = await axios.post('https://your-backend-url.com/api/login', {
+    const response = await axios.post('http://localhost:3000/api/login', {
         email,
         password,
       });
 
       const { token } = response.data;
 
-      // Save JWT token to localStorage
       localStorage.setItem('token', token);
-
-      // Navigate to a protected route (e.g., dashboard or /upload)
       navigate('/upload');
     } catch (err) {
       if (err.response && err.response.status === 401) {
