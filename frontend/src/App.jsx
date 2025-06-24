@@ -6,6 +6,7 @@ import SignUp from './components/SignUp';
 import NotesUploadPage from './components/NotesUploadPage';
 import NotesBrowsingPage from './components/NotesBrowsingPage';
 import PrivateRoute from './components/PrivateRoute';
+import AuthSuccess from './components/AuthSuccess';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             </PrivateRoute>
           } 
         />
+        <Route path="/auth/success" element={<AuthSuccess />} />
       </Routes>
     </Router>
   );

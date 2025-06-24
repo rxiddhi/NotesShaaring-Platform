@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const connectDB = require('./config/db');
+const passport = require('passport');
+const initGooglePassport = require('./config/passport');
 
 // Connect to database
 connectDB();
@@ -16,6 +18,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
+
+// Initialize passport
+initGooglePassport();
+app.use(passport.initialize());
 
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));
