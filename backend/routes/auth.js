@@ -4,9 +4,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const User = require('../models/User');
+
 const router = express.Router();
 
-
+// Signup Route
 router.post('/signup', async (req, res) => {
   try {
     let { username, email, password } = req.body;
@@ -23,7 +24,6 @@ router.post('/signup', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
@@ -44,7 +44,7 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-
+// Login Route
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -79,7 +79,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-
+// Google Auth Routes
 router.get('/google-signup',
   passport.authenticate('google', { scope: ['profile', 'email'], state: 'signup' })
 );
@@ -93,6 +93,7 @@ router.get('/google/callback',
   async (req, res) => {
     const state = req.query.state;
     const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
     const token = jwt.sign(
       { userId: req.user._id },
       process.env.JWT_SECRET,

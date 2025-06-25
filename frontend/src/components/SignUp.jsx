@@ -65,10 +65,10 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length === 0) {
-      try {
-        setLoading(true);
 
+    if (Object.keys(validationErrors).length === 0) {
+      setLoading(true);
+      try {
         const response = await axios.post('http://localhost:3000/api/auth/register', {
           username: formData.username,
           email: formData.email,

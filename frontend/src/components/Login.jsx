@@ -12,7 +12,6 @@ export default function Login() {
   const location = useLocation();
 
   useEffect(() => {
-    // Show success message if redirected from Google sign-up
     const params = new URLSearchParams(location.search);
     if (params.get('signup') === 'success') {
       setSuccess('Sign up successful! Please log in to continue.');
@@ -40,13 +39,12 @@ export default function Login() {
     setError('');
 
     try {
-    const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post('http://localhost:3000/api/auth/login', {
         email,
         password,
       });
 
       const { token } = response.data;
-
       localStorage.setItem('token', token);
       alert('Login successful!');
       navigate('/');
@@ -84,11 +82,13 @@ export default function Login() {
             </svg>
           </div>
         </div>
+
         {success && (
           <div className="mb-4 text-green-600 text-center font-semibold">
             {success}
           </div>
         )}
+
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
           Welcome Back
         </h2>
@@ -155,7 +155,11 @@ export default function Login() {
             }}
             className="w-full flex items-center justify-center gap-2 py-3 mt-2 text-gray-700 font-semibold rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition duration-300"
           >
-            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="w-5 h-5" />
+            <img
+              src="https://developers.google.com/identity/images/g-logo.png"
+              alt="Google"
+              className="w-5 h-5"
+            />
             Sign in with Google
           </button>
         </div>

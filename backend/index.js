@@ -20,15 +20,16 @@ app.use(express.json());
 // Static file serving
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Passport
+// Passport initialization
 initGooglePassport();
 app.use(passport.initialize());
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));         // handles login/signup/OAuth
-app.use('/api', require('./routes/noteRoutes'));        // handles /notes routes
+app.use('/api/auth', require('./routes/auth'));          // login/signup/google
+app.use('/api', require('./routes/authRoutes'));         // protected routes
+app.use('/api', require('./routes/noteRoutes'));         // note uploads/display
 
-// Health check
+// Health check routes
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Notes Sharing Platform API' });
 });
@@ -37,7 +38,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// DB connect & start
+// Connect DB and Start Server
 connectDB()
   .then(() => {
     app.listen(PORT, () => {
