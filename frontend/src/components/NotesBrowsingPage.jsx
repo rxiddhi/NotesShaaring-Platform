@@ -27,7 +27,7 @@ const NotesBrowsingPage = () => {
           throw new Error("Failed to fetch notes");
         }
         const data = await response.json();
-        setNotes(data);
+        setNotes(data.notes || []);
       } catch (err) {
         setError(err.message);
       } finally {
