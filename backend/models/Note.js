@@ -1,4 +1,3 @@
-// models/Note.js
 const mongoose = require('mongoose');
 
 const noteSchema = new mongoose.Schema({
@@ -6,17 +5,25 @@ const noteSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  uploader: {
-    type: String, // or mongoose.Schema.Types.ObjectId if referencing a user
-    required: true,
+  subject: {
+    type: String,
+    required: false, 
+  },
+  description: {
+    type: String,
+    required: false,
   },
   fileUrl: {
     type: String,
     required: true,
   },
-  description: String,
+  uploadedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  }
 }, {
-  timestamps: true, // adds createdAt and updatedAt
+  timestamps: true, 
 });
 
 module.exports = mongoose.model('Note', noteSchema);

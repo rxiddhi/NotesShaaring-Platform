@@ -1,35 +1,60 @@
 import React, { useState, useRef } from "react";
+import axios from "axios";
 import Navbar from "./Navbar";
 
 export default function NotesUploadPage() {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastColor, setToastColor] = useState("bg-green-500");
   const fileInputRef = useRef(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!fileInputRef.current.files[0]) {
+    const file = fileInputRef.current?.files[0];
+    if (!file) {
       alert("Please upload a file before submitting.");
       return;
     }
 
-    console.log({
-      title,
-      subject,
-      description,
-      file: fileInputRef.current.files[0],
-    });
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("subject", subject);
+    formData.append("description", description);
+    formData.append("file", file);
 
-    setTitle("");
-    setSubject("");
-    setDescription("");
-    fileInputRef.current.value = "";
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post("http://localhost:3000/api/notes", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setToastColor("bg-green-500");
+      setToastMessage("✅ Notes uploaded successfully!");
+
+      setTitle("");
+      setSubject("");
+      setDescription("");
+      fileInputRef.current.value = "";
+    } catch (error) {
+      console.error("❌ Upload failed:", error.response?.data || error.message);
+      setToastColor("bg-red-500");
+      setToastMessage(
+        error.response?.data?.message || "Upload failed. Please try again."
+      );
+    }
+
+    setTimeout(() => setToastMessage(""), 3000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br  from-slate-100 to-slate-200 p-6 font-sans flex justify-center items-center px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6 font-sans flex justify-center items-center px-4 py-10">
       <div className="w-full max-w-4xl bg-white shadow-2xl rounded-3xl p-10 space-y-6">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-indigo-700">Upload Your Notes</h1>
@@ -111,6 +136,14 @@ export default function NotesUploadPage() {
           </button>
         </form>
       </div>
+
+      {toastMessage && (
+        <div
+          className={`fixed bottom-5 left-1/2 transform -translate-x-1/2 px-6 py-3 text-white rounded-xl shadow-lg z-50 ${toastColor}`}
+        >
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }
