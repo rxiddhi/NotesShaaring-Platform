@@ -16,6 +16,7 @@ export default function SignUp() {
   const [errors, setErrors] = useState({});
   const [toastMessage, setToastMessage] = useState('');
   const [toastColor, setToastColor] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,7 +67,9 @@ export default function SignUp() {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length === 0) {
       try {
-        const response = await axios.post('http://localhost:3000/api/auth/signup', {
+        setLoading(true);
+
+        const response = await axios.post('http://localhost:3000/api/auth/register', {
           username: formData.username,
           email: formData.email,
           password: formData.password,
@@ -87,6 +90,8 @@ export default function SignUp() {
           error.response?.data?.message || 'Signup failed. Please try again.'
         );
         setTimeout(() => setToastMessage(''), 3000);
+      } finally {
+        setLoading(false);
       }
     } else {
       setErrors(validationErrors);
@@ -117,7 +122,6 @@ export default function SignUp() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-        
           <div>
             <label className="block text-sm font-medium text-gray-700">Username</label>
             <input
@@ -147,6 +151,7 @@ export default function SignUp() {
             />
             {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <div className="relative">
@@ -170,6 +175,7 @@ export default function SignUp() {
             </div>
             {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
             <div className="relative">
@@ -199,8 +205,9 @@ export default function SignUp() {
           <button
             type="submit"
             className="w-full py-3 text-white font-semibold rounded-xl transition duration-300 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+            disabled={loading}
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
