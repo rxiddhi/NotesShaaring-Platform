@@ -7,6 +7,7 @@ const Note = require('../models/Note');
 
 router.post('/notes', authMiddleware, upload.single('file'), async (req, res) => {
   try {
+    console.log('req.user:', req.user);
     const { title, subject, description } = req.body;
 
     if (!req.file) {
@@ -18,7 +19,7 @@ router.post('/notes', authMiddleware, upload.single('file'), async (req, res) =>
       subject,
       description,
       fileUrl: `/uploads/${req.file.filename}`,
-      uploadedBy: req.user.id,
+      uploadedBy: req.user.userId,
     });
 
     await newNote.save();
