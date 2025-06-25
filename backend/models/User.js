@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       trim: true,
+      unique: true, 
     },
     email: {
       type: String,
@@ -28,7 +29,7 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 

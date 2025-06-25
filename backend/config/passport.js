@@ -15,7 +15,7 @@ module.exports = function () {
         try {
           const state = req.query.state;
           if (state === 'signup') {
-            // Signup: Only create if not exists, do not log in
+           
             let user = await User.findOne({ email: profile.emails[0].value });
             if (!user) {
               user = await User.create({
@@ -29,13 +29,13 @@ module.exports = function () {
             }
             return done(null, user);
           } else {
-            // Login: Only allow if user exists
+     
             let user = await User.findOne({ email: profile.emails[0].value });
             if (!user) {
-              // No user, do not log in
+        
               return done(null, false, { message: 'No account found. Please sign up first.' });
             }
-            // Link Google account if not already linked
+          
             if (!user.googleId) {
               user.googleId = profile.id;
               user.name = user.name || profile.displayName;

@@ -10,9 +10,8 @@ const noteSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  uploader: {
+  description: {
     type: String,
-    required: true,
     trim: true
   },
   fileUrl: {
@@ -20,9 +19,10 @@ const noteSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  description: {
-    type: String,
-    trim: true
+  uploadedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   pageCount: {
     type: Number,
@@ -31,13 +31,12 @@ const noteSchema = new mongoose.Schema({
   downloadCount: {
     type: Number,
     default: 0
-  },
-  
+  }
 }, {
-  timestamps: true 
+  timestamps: true
 });
 
-
+// Index for search
 noteSchema.index({
   title: 'text',
   subject: 'text',

@@ -5,19 +5,19 @@ import Login from './components/Login';
 import SignUp from './components/SignUp';
 import NotesUploadPage from './components/NotesUploadPage';
 import NotesBrowsingPage from './components/NotesBrowsingPage';
+import NotesPage from "./pages/NotesPage"; 
+import AuthSuccess from './components/AuthSuccess'; 
 import PrivateRoute from './components/PrivateRoute';
-import AuthSuccess from './components/AuthSuccess';
 
 function App() {
   return (
     <Router>
-    <Navbar/>
+      <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-
-        {/* Protected Routes */}
+        <Route path="/notes" element={<NotesPage />} />
         <Route 
           path="/upload" 
           element={
