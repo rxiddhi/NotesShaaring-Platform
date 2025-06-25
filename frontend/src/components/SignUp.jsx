@@ -77,6 +77,7 @@ export default function SignUp() {
 
         const { token } = response.data;
         localStorage.setItem('token', token);
+        window.dispatchEvent(new Event('authChange'));
         setToastColor('bg-green-500');
         setToastMessage('Signup successful!');
         setTimeout(() => {
