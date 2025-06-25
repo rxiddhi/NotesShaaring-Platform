@@ -1,6 +1,5 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
-
 import {
   FaDownload,
   FaEye,
@@ -8,114 +7,122 @@ import {
   FaCalendarAlt,
   FaUser,
   FaBookOpen,
-} from "react-icons/fa"
+  FaFilePdf,
+} from "react-icons/fa";
 
-const mockNotes = [
-  {
-    id: 1,
-    title: "Advanced Data Structures and Algorithms",
-    subject: "Data Structures and Algorithms (DSA)",
-    uploadedBy: "Aarav Mehta",
-    uploadDate: "2024-01-15",
-    fileType: "PDF",
-    pages: 45,
-    downloads: 234,
-  },
-  {
-    id: 2,
-    title: "Web App Dev Basics",
-    subject: "Web Application Programming (WAP)",
-    uploadedBy: "Ishita Roy",
-    uploadDate: "2024-02-05",
-    fileType: "PDF",
-    pages: 54,
-    downloads: 150,
-  },
-  {
-    id: 3,
-    title: "Linear Algebra Refresher",
-    subject: "Mathematics",
-    uploadedBy: "Nikhil Sharma",
-    uploadDate: "2024-01-22",
-    fileType: "PDF",
-    pages: 38,
-    downloads: 112,
-  },
-  {
-    id: 4,
-    title: "Problem Solving with Python - Week 1",
-    subject: "Problem Solving with Python (PSP)",
-    uploadedBy: "Sneha Verma",
-    uploadDate: "2024-03-10",
-    fileType: "PDF",
-    pages: 29,
-    downloads: 197,
-  },
-  {
-    id: 5,
-    title: "S&W - Introduction to systems and Workflows",
-    subject: "S&W",
-    uploadedBy: "Rahul Gupta",
-    uploadDate: "2024-03-18",
-    fileType: "PDF",
-    pages: 18,
-    downloads: 98,
-  },
-]
+const NotesBrowsingPage = () => {
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const [sortBy, setSortBy] = useState("newest");
 
+  // Fetch notes from API
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const response = await fetch("/api/notes");
+        if (!response.ok) {
+          throw new Error("Failed to fetch notes");
+        }
+        const data = await response.json();
+        setNotes(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-const subjects = [
-  "All Subjects",
-  "Data Structures and Algorithms (DSA)",
-  "Web Application Programming (WAP)",
-  "Mathematics",
-  "Problem Solving with Python (PSP)",
-  "S&W"
-]
+    fetchNotes();
+  }, []);
 
-export default function NotesBrowsingPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedSubject, setSelectedSubject] = useState("All Subjects")
-  const [sortBy, setSortBy] = useState("newest")
+  // Format date function
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "short", day: "numeric" };
+    return new Date(dateString).toLocaleDateString("en-US", options);
+  };
 
-  const filteredNotes = mockNotes
+  // Extract unique subjects from notes for the filter dropdown
+  const extractSubjects = () => {
+    const subjectsSet = new Set();
+    notes.forEach((note) => {
+      if (note.subject) {
+        subjectsSet.add(note.subject);
+      }
+    });
+    return ["All Subjects", ...Array.from(subjectsSet)];
+  };
+
+  const subjects = extractSubjects();
+
+  // Filter and sort notes
+  const filteredNotes = notes
     .filter((note) => {
       const matchesSearch =
         note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        note.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        note.uploadedBy.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesSubject = selectedSubject === "All Subjects" || note.subject === selectedSubject
-      return matchesSearch && matchesSubject
+        (note.subject && note.subject.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (note.uploader && note.uploader.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesSubject =
+        selectedSubject === "All Subjects" || note.subject === selectedSubject;
+      return matchesSearch && matchesSubject;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case "newest":
-          return new Date(b.uploadDate) - new Date(a.uploadDate)
+          return new Date(b.createdAt) - new Date(a.createdAt);
         case "oldest":
-          return new Date(a.uploadDate) - new Date(b.uploadDate)
+          return new Date(a.createdAt) - new Date(b.createdAt);
         case "popular":
-          return b.downloads - a.downloads
+          return (b.downloadCount || 0) - (a.downloadCount || 0);
         case "title":
-          return a.title.localeCompare(b.title)
+          return a.title.localeCompare(b.title);
         default:
-          return 0
+          return 0;
       }
-    })
+    });
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6 font-sans flex justify-center items-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-lg text-purple-600">Loading notes...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-6 font-sans flex justify-center items-center">
+        <div className="text-center p-4 bg-red-100 rounded-lg max-w-md">
+          <h3 className="text-red-600 font-bold">Error loading notes</h3>
+          <p className="text-red-500">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-  <div className="min-h-screen p-6 font-sans" style={{ background: 'linear-gradient(to bottom right, #f0e9ff, #e9d5ff, #fce7f3)' }}>
-   <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-[#667EEA] to-[#764BA2] bg-clip-text text-transparent">
-  Browse Notes
-</h1>
+    <div
+      className="min-h-screen p-6 font-sans"
+      style={{
+        background: "linear-gradient(to bottom right, #f0e9ff, #e9d5ff, #fce7f3)",
+      }}
+    >
+      <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-[#667EEA] to-[#764BA2] bg-clip-text text-transparent">
+        Browse Notes
+      </h1>
 
+     
       <div className="flex flex-wrap gap-4 bg-white p-4 rounded-xl mb-6 items-center shadow-sm">
         <div className="flex items-center gap-2 bg-slate-100 rounded-md px-3 py-2 flex-1">
           <FaSearch className="text-slate-400" />
@@ -134,7 +141,9 @@ export default function NotesBrowsingPage() {
           className="p-2 border border-slate-300 rounded-md text-sm"
         >
           {subjects.map((subj) => (
-            <option key={subj} value={subj}>{subj}</option>
+            <option key={subj} value={subj}>
+              {subj}
+            </option>
           ))}
         </select>
 
@@ -150,61 +159,86 @@ export default function NotesBrowsingPage() {
         </select>
       </div>
 
+     
       <p className="text-slate-600 mb-4">
         Showing {filteredNotes.length} {filteredNotes.length === 1 ? "note" : "notes"}
         {selectedSubject !== "All Subjects" && ` in ${selectedSubject}`}
         {searchTerm && ` matching "${searchTerm}"`}
       </p>
 
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-        {filteredNotes.map((note) => (
-          <div key={note.id} className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200 flex flex-col justify-between">
-            <div className="flex justify-between text-sm text-slate-500 mb-2">
-              <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md flex items-center gap-1 text-xs">
-                <FaBookOpen /> {note.subject}
-              </span>
-              <span>{note.pages} pages</span>
+    
+      {filteredNotes.length === 0 ? (
+        <div className="bg-white rounded-xl p-8 text-center shadow-sm">
+          <FaFilePdf className="mx-auto text-4xl text-gray-400 mb-3" />
+          <h3 className="text-lg font-medium text-gray-700">No notes found</h3>
+          <p className="text-gray-500">
+            Try adjusting your search or filters
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+          {filteredNotes.map((note) => (
+            <div
+              key={note._id}
+              className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200 flex flex-col justify-between"
+            >
+             
+              <div className="flex justify-between text-sm text-slate-500 mb-2">
+                <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md flex items-center gap-1 text-xs">
+                  <FaBookOpen /> {note.subject || "Uncategorized"}
+                </span>
+                <span>{note.pageCount || "N/A"} pages</span>
+              </div>
+
+           
+              <h3 className="text-base font-semibold text-slate-800 mb-2">
+                {note.title}
+              </h3>
+
+             
+              <p className="text-sm text-slate-600 flex items-center gap-1 mb-1">
+                <FaUser /> {note.uploader || "Anonymous"}
+              </p>
+              <p className="text-sm text-slate-600 flex items-center gap-1">
+                <FaCalendarAlt /> {formatDate(note.createdAt)}
+              </p>
+
+            
+              <div className="flex justify-between text-xs text-slate-400 mt-3">
+                <span>{note.downloadCount || 0} downloads</span>
+                <span>PDF</span>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2 mt-4">
+                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium">
+                  <FaEye />
+                  View
+                </button>
+
+                <button
+                  onClick={() => {
+                    // Handle download
+                    window.open(note.fileUrl, "_blank");
+                    // You might want to track downloads by calling an API endpoint
+                  }}
+                  className="flex-1 px-3 py-2 rounded-md text-white font-medium transition-transform duration-200 hover:scale-105 shadow-md"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #667EEA 0%, #764BA2 100%)",
+                  }}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <FaDownload /> Download
+                  </div>
+                </button>
+              </div>
             </div>
-
-            <h3 className="text-base font-semibold text-slate-800 mb-2">{note.title}</h3>
-
-            <p className="text-sm text-slate-600 flex items-center gap-1 mb-1">
-              <FaUser /> {note.uploadedBy}
-            </p>
-            <p className="text-sm text-slate-600 flex items-center gap-1">
-              <FaCalendarAlt /> {formatDate(note.uploadDate)}
-            </p>
-
-            <div className="flex justify-between text-xs text-slate-400 mt-3">
-              <span>{note.downloads} downloads</span>
-              <span>{note.fileType}</span>
-            </div>
-
-            <div className="flex gap-2 mt-4">
-            <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium">
-  <FaEye />
-  View
-</button>
-
-              <button
-                type="button"
-                onClick={() => alert("Downloading...")}
-                className="flex-1 px-3 py-2 rounded-md text-white font-medium transition-transform duration-200 hover:scale-105 shadow-md"
-                style={{
-                  background: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "#5A67D8"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "linear-gradient(135deg, #667EEA 0%, #764BA2 100%)"}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <FaDownload /> Download
-                </div>
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
+export default NotesBrowsingPage;

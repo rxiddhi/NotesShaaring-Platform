@@ -1,22 +1,47 @@
-// models/Note.js
 const mongoose = require('mongoose');
 
 const noteSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
+    trim: true
+  },
+  subject: {
+    type: String,
+    trim: true
   },
   uploader: {
-    type: String, // or mongoose.Schema.Types.ObjectId if referencing a user
+    type: String,
     required: true,
+    trim: true
   },
   fileUrl: {
     type: String,
     required: true,
+    trim: true
   },
-  description: String,
+  description: {
+    type: String,
+    trim: true
+  },
+  pageCount: {
+    type: Number,
+    default: 0
+  },
+  downloadCount: {
+    type: Number,
+    default: 0
+  },
+  
 }, {
-  timestamps: true, // adds createdAt and updatedAt
+  timestamps: true 
+});
+
+
+noteSchema.index({
+  title: 'text',
+  subject: 'text',
+  description: 'text'
 });
 
 module.exports = mongoose.model('Note', noteSchema);
