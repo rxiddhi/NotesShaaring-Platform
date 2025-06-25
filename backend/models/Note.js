@@ -4,26 +4,43 @@ const noteSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
+    trim: true
   },
   subject: {
     type: String,
-    required: false, 
+    trim: true
   },
   description: {
     type: String,
-    required: false,
+    trim: true
   },
   fileUrl: {
     type: String,
     required: true,
+    trim: true
   },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: true
+  },
+  pageCount: {
+    type: Number,
+    default: 0
+  },
+  downloadCount: {
+    type: Number,
+    default: 0
   }
 }, {
-  timestamps: true, 
+  timestamps: true
+});
+
+// Index for search
+noteSchema.index({
+  title: 'text',
+  subject: 'text',
+  description: 'text'
 });
 
 module.exports = mongoose.model('Note', noteSchema);
