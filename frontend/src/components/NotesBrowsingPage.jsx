@@ -218,9 +218,16 @@ const NotesBrowsingPage = () => {
 
                 <button
                   onClick={() => {
-                    // Handle download
-                    window.open(note.fileUrl, "_blank");
-                    // You might want to track downloads by calling an API endpoint
+                    if (note.fileUrl) {
+                      const link = document.createElement("a");
+                      link.href = note.fileUrl;
+                      link.download = note.title || "note.pdf";
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    } else {
+                      alert("File URL not available.");
+                    }
                   }}
                   className="flex-1 px-3 py-2 rounded-md text-white font-medium transition-transform duration-200 hover:scale-105 shadow-md"
                   style={{
