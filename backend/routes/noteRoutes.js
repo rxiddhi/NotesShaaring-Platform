@@ -56,7 +56,7 @@ router.delete("/notes/:id", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Note not found" });
     }
     // Check if the logged-in user is the uploader
-    if (note.uploadedBy.toString() !== req.user.id) {
+    if (note.uploadedBy.toString() !== req.user.userId) {
       return res
         .status(403)
         .json({ message: "You are not authorized to delete this note" });
