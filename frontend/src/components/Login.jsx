@@ -46,6 +46,7 @@ export default function Login() {
 
       const { token } = response.data;
       localStorage.setItem('token', token);
+      window.dispatchEvent(new Event('authChange'));
       alert('Login successful!');
       navigate('/');
     } catch (err) {
