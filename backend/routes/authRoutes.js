@@ -5,10 +5,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const User = require('../models/User'); 
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-
+// Register Route
 router.post('/signup', async (req, res) => {
   try {
     let { username, email, password } = req.body;
@@ -56,7 +57,7 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-
+// Login Route
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -96,7 +97,23 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Protected Route - Get Current User Info
+router.get('/me', authMiddleware, (req, res) => {
+  res.json({
+    message: 'This is protected user data',
+    user: req.user
+  });
+});
 
+// Protected Route - Upload Access Check
+router.get('/upload', authMiddleware, (req, res) => {
+  res.json({
+    message: 'You are allowed to upload notes!',
+    user: req.user
+  });
+});
+
+// Google Signup/Login
 router.get('/google-signup',
   passport.authenticate('google', { scope: ['profile', 'email'], state: 'signup' })
 );
@@ -110,6 +127,7 @@ router.get('/google/callback',
   async (req, res) => {
     const state = req.query.state;
     const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
     const token = jwt.sign(
       { userId: req.user._id },
       process.env.JWT_SECRET,
