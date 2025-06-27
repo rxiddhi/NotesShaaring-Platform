@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-
+const cors = require("cors");
 dotenv.config();
 
 const app = express();
@@ -16,6 +16,8 @@ const notesRouter = require("./routes/notes");
 
 app.use("/api/auth", authRoutes);   
 app.use("/api/notes", notesRouter); 
+app.use(cors());
+app.use("/uploads", express.static("uploads"));
 
 
 Note.on('index', function(err) {
