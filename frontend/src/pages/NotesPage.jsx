@@ -85,13 +85,15 @@ const NotesPage = () => {
   };
 
   const uploadedNotes = notes.filter(note => {
-    const uploaderId = note.uploadedBy?._id || note.uploadedBy;
+    if (!note.uploadedBy) return false;
+    const uploaderId = typeof note.uploadedBy === 'object' ? note.uploadedBy._id : note.uploadedBy;
     return uploaderId === currentUserId;
   });
 
   const downloadedNotes = notes.filter(note => {
-    return note.downloadedBy?.some(user =>
-      typeof user === 'object' ? user._id === currentUserId : user === currentUserId
+    if (!Array.isArray(note.downloadedBy)) return false;
+    return note.downloadedBy.some(user =>
+      user && (typeof user === 'object' ? user._id === currentUserId : user === currentUserId)
     );
   });
 
@@ -116,7 +118,7 @@ const NotesPage = () => {
             {downloading === note._id ? 'Downloading...' : 'Download'}
           </button>
           {currentUserId &&
-            (note.uploadedBy?._id === currentUserId || note.uploadedBy === currentUserId) && (
+            (note.uploadedBy && (note.uploadedBy._id === currentUserId || note.uploadedBy === currentUserId)) && (
               <button
                 onClick={() => handleDelete(note._id)}
                 className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"

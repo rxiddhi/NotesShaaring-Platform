@@ -1,4 +1,3 @@
-
 const express = require("express");
 const router = express.Router();
 const upload = require("../config/multer");
@@ -8,6 +7,9 @@ const Note = require("../models/Note");
 
 router.post("/notes", authMiddleware, upload.single("file"), async (req, res) => {
   try {
+    console.log("req.user:", req.user);
+    console.log("req.headers.authorization:", req.headers.authorization);
+
     const { title, subject, description } = req.body;
 
     if (!req.file) {
