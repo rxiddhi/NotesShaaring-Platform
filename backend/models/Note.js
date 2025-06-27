@@ -31,12 +31,17 @@ const noteSchema = new mongoose.Schema({
   downloadCount: {
     type: Number,
     default: 0
-  }
+  },
+  downloadedBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  ]
 }, {
   timestamps: true
 });
 
-// Index for search
 noteSchema.index({
   title: 'text',
   subject: 'text',
