@@ -8,34 +8,36 @@ import NotesBrowsingPage from './components/NotesBrowsingPage';
 import NotesPage from "./pages/NotesPage"; 
 import AuthSuccess from './components/AuthSuccess'; 
 import PrivateRoute from './components/PrivateRoute';
+import NoteDetailsPage from './pages/NoteDetailsPage';
 
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/notes" element={<NotesPage />} />
-        <Route 
-          path="/upload" 
-          element={
-            <PrivateRoute>
-              <NotesUploadPage />
-            </PrivateRoute>
-          } 
-        />
-        <Route 
-          path="/browse" 
-          element={
-            <PrivateRoute>
-              <NotesBrowsingPage />
-            </PrivateRoute>
-          } 
-        />
-        <Route path="/auth/success" element={<AuthSuccess />} />
-      </Routes>
+  <Route path="/" element={<HomePage />} />
+  <Route path="/login" element={<Login />} />
+  <Route path="/signup" element={<SignUp />} />
+  <Route path="/notes" element={<NotesPage />} />
+  <Route path="/notes/:id" element={<NoteDetailsPage />} /> 
+  <Route 
+    path="/upload" 
+    element={
+      <PrivateRoute>
+        <NotesUploadPage />
+      </PrivateRoute>
+    } 
+  />
+  <Route 
+    path="/browse" 
+    element={
+      <PrivateRoute>
+        <NotesBrowsingPage />
+      </PrivateRoute>
+    } 
+  />
+  <Route path="/auth/success" element={<AuthSuccess />} />
+</Routes>
     </Router>
   );
 }

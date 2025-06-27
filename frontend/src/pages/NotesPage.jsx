@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { Link } from 'react-router-dom';
+import ReviewList from '../components/Reviews/ReviewList';
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
   const [downloading, setDownloading] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedNoteId, setSelectedNoteId] = useState(null);
 
   const token = localStorage.getItem('token');
   let currentUserId = null;
@@ -128,9 +132,19 @@ const NotesPage = () => {
               </button>
             )}
         </div>
+        <button
+          onClick={() => {
+            setSelectedNoteId(note._id);
+            setModalOpen(true);
+          }}
+          className="text-blue-600 hover:underline text-sm mt-2 inline-block"
+        >
+          Add/View Reviews
+        </button>
       </div>
     );
   };
+  
 
   return (
     <div className="p-6">
@@ -162,6 +176,21 @@ const NotesPage = () => {
             )}
           </section>
         </>
+      )}
+
+      {/* Modal for reviews */}
+      {modalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm" style={{ background: 'rgba(255,255,255,0.3)' }}>
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
+            <button
+              onClick={() => setModalOpen(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
+            >
+              &times;
+            </button>
+            <ReviewList noteId={selectedNoteId} currentUserId={currentUserId} />
+          </div>
+        </div>
       )}
     </div>
   );
