@@ -211,24 +211,46 @@ const NotesBrowsingPage = () => {
 
               {/* Action buttons */}
               <div className="flex gap-2 mt-4">
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium">
-                  <FaEye />
-                  View
+              <button
+              onClick={() => {
+              const fullUrl = note.fileUrl.startsWith("http")
+              ? note.fileUrl
+              : `http://localhost:3000${note.fileUrl}`;
+              window.open(fullUrl, "_blank");
+              }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium"
+                      >
+              <FaEye />
+                    View
                 </button>
 
                 <button
                   onClick={() => {
-                    if (note.fileUrl) {
-                      const link = document.createElement("a");
-                      link.href = note.fileUrl;
-                      link.download = note.title || "note.pdf";
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    } else {
-                      alert("File URL not available.");
-                    }
+                    const fullUrl = note.fileUrl.startsWith("http")
+                      ? note.fileUrl
+                      : `http://localhost:3000${note.fileUrl}`;
+                  
+                    fetch(fullUrl)
+                      .then((response) => {
+                        if (!response.ok) throw new Error("File not found");
+                        return response.blob();
+                      })
+                      .then((blob) => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = note.title ? `${note.title}.pdf` : "note.pdf";
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                      })
+                      .catch(() => {
+                        alert("Download failed. Please try again.");
+                      });
                   }}
+                  
+                  
                   className="flex-1 px-3 py-2 rounded-md text-white font-medium transition-transform duration-200 hover:scale-105 shadow-md"
                   style={{
                     background:
