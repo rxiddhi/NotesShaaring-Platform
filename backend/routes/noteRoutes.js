@@ -27,7 +27,7 @@ router.post("/notes", authMiddleware, upload.single("file"), async (req, res) =>
     await newNote.save();
     res.status(201).json({ message: "Note uploaded successfully", note: newNote });
   } catch (err) {
-    console.error("❌ Upload error:", err);
+    console.error(" Upload error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -40,7 +40,7 @@ router.get("/notes", async (req, res) => {
       .populate("uploadedBy", "username email");
     res.status(200).json({ notes });
   } catch (err) {
-    console.error("❌ Fetch notes error:", err);
+    console.error("Fetch notes error:", err);
     res.status(500).json({ message: "Failed to fetch notes" });
   }
 });
@@ -60,7 +60,7 @@ router.put("/notes/:id/download", authMiddleware, async (req, res) => {
 
     res.status(200).json({ message: "Download tracked", note });
   } catch (err) {
-    console.error("❌ Download tracking error:", err);
+    console.error(" Download tracking error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -78,7 +78,7 @@ router.delete("/notes/:id", authMiddleware, async (req, res) => {
     await note.deleteOne();
     res.status(200).json({ message: "Note deleted successfully" });
   } catch (err) {
-    console.error("❌ Delete note error:", err);
+    console.error(" Delete note error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
