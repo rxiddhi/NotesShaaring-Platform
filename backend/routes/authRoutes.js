@@ -4,12 +4,11 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
-const User = require('../models/User'); 
 const authMiddleware = require('../middlewares/authMiddleware');
+const User = require('../models/User'); 
 
 const router = express.Router();
 
-// Register Route
 router.post('/signup', async (req, res) => {
   try {
     let { username, email, password } = req.body;
