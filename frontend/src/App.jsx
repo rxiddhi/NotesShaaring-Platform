@@ -15,29 +15,43 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-  <Route path="/" element={<HomePage />} />
-  <Route path="/login" element={<Login />} />
-  <Route path="/signup" element={<SignUp />} />
-  <Route path="/notes" element={<NotesPage />} />
-  <Route path="/notes/:id" element={<NoteDetailsPage />} /> 
-  <Route 
-    path="/upload" 
-    element={
-      <PrivateRoute>
-        <NotesUploadPage />
-      </PrivateRoute>
-    } 
-  />
-  <Route 
-    path="/browse" 
-    element={
-      <PrivateRoute>
-        <NotesBrowsingPage />
-      </PrivateRoute>
-    } 
-  />
-  <Route path="/auth/success" element={<AuthSuccess />} />
-</Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route 
+          path="/notes" 
+          element={
+            <PrivateRoute>
+              <NotesPage />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/notes/:id" 
+          element={
+            <PrivateRoute>
+              <NoteDetailsPage />
+            </PrivateRoute>
+          } 
+        /> 
+        <Route 
+          path="/upload" 
+          element={
+            <PrivateRoute>
+              <NotesUploadPage />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/browse" 
+          element={
+            <PrivateRoute>
+              <NotesBrowsingPage />
+            </PrivateRoute>
+          } 
+        />
+        <Route path="/auth/success" element={<AuthSuccess />} />
+      </Routes>
     </Router>
   );
 }
