@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "./Navbar";
 import {
   FaDownload,
   FaEye,
@@ -17,8 +16,9 @@ const NotesBrowsingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [sortBy, setSortBy] = useState("newest");
+  const [likedNotes, setLikedNotes] = useState([]);
 
-  // Fetch notes from API
+
   useEffect(() => {
     const fetchNotes = async () => {
       try {
@@ -38,32 +38,52 @@ const NotesBrowsingPage = () => {
     fetchNotes();
   }, []);
 
-  // Format date function
+  const handleLikeToggle = (noteId) => {
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note._id === noteId
+          ? {
+              ...note,
+              likes: likedNotes.includes(noteId)
+                ? (note.likes || 0) - 1
+                : (note.likes || 0) + 1,
+            }
+          : note
+      )
+    );
+
+    setLikedNotes((prev) =>
+      prev.includes(noteId)
+        ? prev.filter((id) => id !== noteId)
+        : [...prev, noteId]
+    );
+
+
+  };
+
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "short", day: "numeric" };
     return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
-  // Extract unique subjects from notes for the filter dropdown
   const extractSubjects = () => {
     const subjectsSet = new Set();
     notes.forEach((note) => {
-      if (note.subject) {
-        subjectsSet.add(note.subject);
-      }
+      if (note.subject) subjectsSet.add(note.subject);
     });
     return ["All Subjects", ...Array.from(subjectsSet)];
   };
 
   const subjects = extractSubjects();
 
-  // Filter and sort notes
   const filteredNotes = notes
     .filter((note) => {
       const matchesSearch =
         note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (note.subject && note.subject.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (note.uploader && note.uploader.toLowerCase().includes(searchTerm.toLowerCase()));
+        (note.subject &&
+          note.subject.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (note.uploader &&
+          note.uploader.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesSubject =
         selectedSubject === "All Subjects" || note.subject === selectedSubject;
       return matchesSearch && matchesSubject;
@@ -118,11 +138,12 @@ const NotesBrowsingPage = () => {
         background: "linear-gradient(to bottom right, #f0e9ff, #e9d5ff, #fce7f3)",
       }}
     >
+
       <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-[#667EEA] to-[#764BA2] bg-clip-text text-transparent">
         Browse Notes
       </h1>
 
-     
+
       <div className="flex flex-wrap gap-4 bg-white p-4 rounded-xl mb-6 items-center shadow-sm">
         <div className="flex items-center gap-2 bg-slate-100 rounded-md px-3 py-2 flex-1">
           <FaSearch className="text-slate-400" />
@@ -159,21 +180,19 @@ const NotesBrowsingPage = () => {
         </select>
       </div>
 
-     
+
       <p className="text-slate-600 mb-4">
-        Showing {filteredNotes.length} {filteredNotes.length === 1 ? "note" : "notes"}
+        Showing {filteredNotes.length}{" "}
+        {filteredNotes.length === 1 ? "note" : "notes"}
         {selectedSubject !== "All Subjects" && ` in ${selectedSubject}`}
         {searchTerm && ` matching "${searchTerm}"`}
       </p>
 
-    
       {filteredNotes.length === 0 ? (
         <div className="bg-white rounded-xl p-8 text-center shadow-sm">
           <FaFilePdf className="mx-auto text-4xl text-gray-400 mb-3" />
           <h3 className="text-lg font-medium text-gray-700">No notes found</h3>
-          <p className="text-gray-500">
-            Try adjusting your search or filters
-          </p>
+          <p className="text-gray-500">Try adjusting your search or filters</p>
         </div>
       ) : (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
@@ -182,7 +201,6 @@ const NotesBrowsingPage = () => {
               key={note._id}
               className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200 flex flex-col justify-between"
             >
-             
               <div className="flex justify-between text-sm text-slate-500 mb-2">
                 <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md flex items-center gap-1 text-xs">
                   <FaBookOpen /> {note.subject || "Uncategorized"}
@@ -190,12 +208,10 @@ const NotesBrowsingPage = () => {
                 <span>{note.pageCount || "N/A"} pages</span>
               </div>
 
-           
               <h3 className="text-base font-semibold text-slate-800 mb-2">
                 {note.title}
               </h3>
 
-             
               <p className="text-sm text-slate-600 flex items-center gap-1 mb-1">
                 <FaUser /> {note.uploader || "Anonymous"}
               </p>
@@ -203,25 +219,20 @@ const NotesBrowsingPage = () => {
                 <FaCalendarAlt /> {formatDate(note.createdAt)}
               </p>
 
-            
               <div className="flex justify-between text-xs text-slate-400 mt-3">
                 <span>{note.downloadCount || 0} downloads</span>
                 <span>PDF</span>
               </div>
 
-              {/* Action buttons */}
-              <div className="flex gap-2 mt-4">
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium">
+
+              <div className="flex items-center justify-between gap-2 mt-4">
+                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium border border-blue-200">
                   <FaEye />
                   View
                 </button>
 
                 <button
-                  onClick={() => {
-                    // Handle download
-                    window.open(note.fileUrl, "_blank");
-                    // You might want to track downloads by calling an API endpoint
-                  }}
+                  onClick={() => window.open(note.fileUrl, "_blank")}
                   className="flex-1 px-3 py-2 rounded-md text-white font-medium transition-transform duration-200 hover:scale-105 shadow-md"
                   style={{
                     background:
@@ -231,6 +242,20 @@ const NotesBrowsingPage = () => {
                   <div className="flex items-center justify-center gap-2">
                     <FaDownload /> Download
                   </div>
+                </button>
+
+
+                <button
+                  onClick={() => handleLikeToggle(note._id)}
+                  className="flex items-center gap-1 text-lg transition duration-200 hover:scale-105"
+                  title={likedNotes.includes(note._id) ? "Unlike" : "Like"}
+                >
+                  <span>
+                    {likedNotes.includes(note._id) ? "❤️" : "🤍"}
+                  </span>
+                  <span className="text-sm text-slate-700 font-medium">
+                    {note.likes || 0}
+                  </span>
                 </button>
               </div>
             </div>
@@ -242,3 +267,6 @@ const NotesBrowsingPage = () => {
 };
 
 export default NotesBrowsingPage;
+
+
+
