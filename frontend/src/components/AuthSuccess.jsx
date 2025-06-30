@@ -11,7 +11,7 @@ export default function AuthSuccess() {
       localStorage.setItem('token', token);
       // Dispatch authChange event to update Navbar immediately
       window.dispatchEvent(new Event('authChange'));
-      navigate('/dashboard');
+      navigate('/');
     } 
     
   }, [navigate]);
