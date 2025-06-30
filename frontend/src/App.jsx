@@ -8,6 +8,7 @@ import NotesBrowsingPage from './components/NotesBrowsingPage';
 import NotesPage from "./pages/NotesPage"; 
 import AuthSuccess from './components/AuthSuccess'; 
 import PrivateRoute from './components/PrivateRoute';
+import NoteDetailsPage from './pages/NoteDetailsPage';
 
 function App() {
   return (
@@ -17,7 +18,22 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/notes" element={<NotesPage />} />
+        <Route 
+          path="/notes" 
+          element={
+            <PrivateRoute>
+              <NotesPage />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/notes/:id" 
+          element={
+            <PrivateRoute>
+              <NoteDetailsPage />
+            </PrivateRoute>
+          } 
+        /> 
         <Route 
           path="/upload" 
           element={

@@ -239,14 +239,67 @@ const NotesBrowsingPage = () => {
                 <span>PDF</span>
               </div>
 
-              <div className="flex items-center justify-between gap-2 mt-4">
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium border border-blue-200">
-                  <FaEye />
-                  View
-                </button>
+<div className="flex items-center justify-between gap-2 mt-4">
+  <button
+    onClick={() => {
+      const fullUrl = note.fileUrl.startsWith("http")
+        ? note.fileUrl
+        : `http://localhost:3000${note.fileUrl}`;
+      window.open(fullUrl, "_blank");
+    }}
+    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium border border-blue-200"
+  >
+    <FaEye />
+    View
+  </button>
 
-                <button
-                  onClick={() => window.open(note.fileUrl, "_blank")}
+  <button
+    onClick={() => {
+      const fullUrl = note.fileUrl.startsWith("http")
+        ? note.fileUrl
+        : `http://localhost:3000${note.fileUrl}`;
+
+      fetch(fullUrl)
+        .then((response) => {
+          if (!response.ok) throw new Error("File not found");
+          return response.blob();
+        })
+        .then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = note.title ? `${note.title}.pdf` : "note.pdf";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(() => {
+          alert("Download failed. Please try again.");
+        });
+    }}
+    className="flex-1 px-3 py-2 rounded-md text-white font-medium transition-transform duration-200 hover:scale-105 shadow-md"
+    style={{
+      background: "linear-gradient(135deg, #667EEA 0%, #764BA2 100%)",
+    }}
+  >
+    <div className="flex items-center justify-center gap-2">
+      <FaDownload /> Download
+    </div>
+  </button>
+
+  <button
+    onClick={() => handleLikeToggle(note._id)}
+    className="flex items-center gap-1 text-lg transition duration-200 hover:scale-105"
+    title={likedNotes.includes(note._id) ? "Unlike" : "Like"}
+  >
+    <span>{likedNotes.includes(note._id) ? "❤️" : "🤍"}</span>
+    <span className="text-sm text-slate-700 font-medium">
+      {typeof note.likes === "number" ? note.likes : 0}
+    </span>
+  </button>
+</div>
+
                   className="flex-1 px-3 py-2 rounded-md text-white font-medium transition-transform duration-200 hover:scale-105 shadow-md"
                   style={{
                     background:
