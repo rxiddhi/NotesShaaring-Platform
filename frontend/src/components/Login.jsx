@@ -48,7 +48,7 @@ export default function Login() {
       localStorage.setItem('token', token);
       window.dispatchEvent(new Event('authChange'));
       alert('Login successful!');
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setError('Invalid email or password.');
