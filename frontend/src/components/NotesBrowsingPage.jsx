@@ -20,6 +20,18 @@ const NotesBrowsingPage = () => {
 
 
   useEffect(() => {
+    const stored = localStorage.getItem("likedNotes");
+    if (stored) {
+      setLikedNotes(JSON.parse(stored));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("likedNotes", JSON.stringify(likedNotes));
+  }, [likedNotes]);
+
+
+  useEffect(() => {
     const fetchNotes = async () => {
       try {
         const response = await fetch("/api/notes");
@@ -27,7 +39,14 @@ const NotesBrowsingPage = () => {
           throw new Error("Failed to fetch notes");
         }
         const data = await response.json();
-        setNotes(data.notes || []);
+
+
+        const enriched = (data.notes || []).map((note) => ({
+          ...note,
+          likes: note.likes || 0,
+        }));
+
+        setNotes(enriched);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -39,26 +58,24 @@ const NotesBrowsingPage = () => {
   }, []);
 
   const handleLikeToggle = (noteId) => {
-    setNotes((prevNotes) =>
-      prevNotes.map((note) =>
-        note._id === noteId
-          ? {
-              ...note,
-              likes: likedNotes.includes(noteId)
-                ? (note.likes || 0) - 1
-                : (note.likes || 0) + 1,
-            }
-          : note
-      )
-    );
+    const updatedNotes = notes.map((note) => {
+      if (note._id === noteId) {
+        const isLiked = likedNotes.includes(noteId);
+        const updatedLikes = isLiked
+          ? Math.max(0, (note.likes || 0) - 1)
+          : (note.likes || 0) + 1;
+        return { ...note, likes: updatedLikes };
+      }
+      return note;
+    });
+
+    setNotes(updatedNotes);
 
     setLikedNotes((prev) =>
       prev.includes(noteId)
         ? prev.filter((id) => id !== noteId)
         : [...prev, noteId]
     );
-
-
   };
 
   const formatDate = (dateString) => {
@@ -105,7 +122,7 @@ const NotesBrowsingPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-6 font-sans flex justify-center items-center">
+      <div className="min-h-screen p-6 flex justify-center items-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
           <p className="mt-4 text-lg text-purple-600">Loading notes...</p>
@@ -116,7 +133,7 @@ const NotesBrowsingPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen p-6 font-sans flex justify-center items-center">
+      <div className="min-h-screen p-6 flex justify-center items-center">
         <div className="text-center p-4 bg-red-100 rounded-lg max-w-md">
           <h3 className="text-red-600 font-bold">Error loading notes</h3>
           <p className="text-red-500">{error}</p>
@@ -133,12 +150,11 @@ const NotesBrowsingPage = () => {
 
   return (
     <div
-      className="min-h-screen p-6 font-sans"
+      className="min-h-screen p-6"
       style={{
         background: "linear-gradient(to bottom right, #f0e9ff, #e9d5ff, #fce7f3)",
       }}
     >
-
       <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-[#667EEA] to-[#764BA2] bg-clip-text text-transparent">
         Browse Notes
       </h1>
@@ -149,7 +165,7 @@ const NotesBrowsingPage = () => {
           <FaSearch className="text-slate-400" />
           <input
             type="text"
-            placeholder="Search notes by title, subject, or author..."
+            placeholder="Search notes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="bg-transparent outline-none flex-1 text-base"
@@ -182,8 +198,7 @@ const NotesBrowsingPage = () => {
 
 
       <p className="text-slate-600 mb-4">
-        Showing {filteredNotes.length}{" "}
-        {filteredNotes.length === 1 ? "note" : "notes"}
+        Showing {filteredNotes.length} {filteredNotes.length === 1 ? "note" : "notes"}
         {selectedSubject !== "All Subjects" && ` in ${selectedSubject}`}
         {searchTerm && ` matching "${searchTerm}"`}
       </p>
@@ -224,7 +239,6 @@ const NotesBrowsingPage = () => {
                 <span>PDF</span>
               </div>
 
-
               <div className="flex items-center justify-between gap-2 mt-4">
                 <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium border border-blue-200">
                   <FaEye />
@@ -244,7 +258,6 @@ const NotesBrowsingPage = () => {
                   </div>
                 </button>
 
-
                 <button
                   onClick={() => handleLikeToggle(note._id)}
                   className="flex items-center gap-1 text-lg transition duration-200 hover:scale-105"
@@ -254,7 +267,7 @@ const NotesBrowsingPage = () => {
                     {likedNotes.includes(note._id) ? "❤️" : "🤍"}
                   </span>
                   <span className="text-sm text-slate-700 font-medium">
-                    {note.likes || 0}
+                    {typeof note.likes === "number" ? note.likes : 0}
                   </span>
                 </button>
               </div>
@@ -267,6 +280,3 @@ const NotesBrowsingPage = () => {
 };
 
 export default NotesBrowsingPage;
-
-
-
