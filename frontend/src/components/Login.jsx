@@ -133,6 +133,15 @@ export default function Login() {
             </div>
           </div>
 
+          <div className="flex justify-end">
+            <a
+              href="/forgot-password"
+              className="text-sm text-indigo-600 hover:underline"
+            >
+              Forgot Password?
+            </a>
+          </div>
+
           <p
             className={`text-sm pl-1 min-h-[20px] transition-all duration-300 ${
               error ? 'text-red-500 opacity-100' : 'opacity-0'
