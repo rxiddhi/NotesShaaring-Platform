@@ -11,6 +11,7 @@ import AuthSuccess from './components/AuthSuccess';
 import PrivateRoute from './components/PrivateRoute';
 import NoteDetailsPage from './pages/NoteDetailsPage';
 import PublicRoute from './components/PublicRoute';
+import ForgotPassword from './components/ForgotPassword';
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
           } 
         />
         <Route path="/auth/success" element={<AuthSuccess />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </Router>
   );

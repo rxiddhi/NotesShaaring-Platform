@@ -6,6 +6,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const User = require('../models/User'); 
 const Note = require('../models/Note');
 const Review = require('../models/Review');
+const authController = require('../controllers/authController');
 
 const router = express.Router();
 
@@ -205,5 +206,8 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Failed to load dashboard stats' });
   }
 });
+
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password/:token', authController.resetPassword);
 
 module.exports = router;
