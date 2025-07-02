@@ -175,4 +175,25 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   }
 });
 
+// Forgot Password Endpoint
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+  try {
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    if (!user) {
+      // For security, do not reveal if the email is not registered
+      return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
+    }
+    // Here you would generate a token and send an email
+    // For now, just simulate success
+    return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
