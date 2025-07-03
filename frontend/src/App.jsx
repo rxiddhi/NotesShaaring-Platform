@@ -13,6 +13,7 @@ import PrivateRoute from './components/PrivateRoute';
 import NoteDetailsPage from './pages/NoteDetailsPage';
 import PublicRoute from './components/PublicRoute';
 import ForgotPassword from './components/ForgotPassword';
+import DoubtDetailPage from './pages/DoubtDetailPage';
 
 function App() {
   return (
@@ -70,6 +71,14 @@ function App() {
               </PrivateRoute>
             } 
           />
+        <Route 
+          path="/doubts/:id" 
+          element={
+            <PrivateRoute>
+              <DoubtDetailPage />
+            </PrivateRoute>
+          } 
+        />
         <Route path="/auth/success" element={<AuthSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
