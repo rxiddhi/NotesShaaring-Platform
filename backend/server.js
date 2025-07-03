@@ -14,12 +14,14 @@ app.use(express.json());
 const authRoutes = require("./routes/auth");
 const notesRouter = require("./routes/notes");
 const reviewRoutes = require("./routes/reviewRoutes");
-const doubtRoutes = require("./routes/doubtRoutes"); 
+const doubtRoutes = require("./routes/doubtRoutes");
+const answerRoutes = require("./routes/answerRoutes"); 
 
 app.use("/api/auth", authRoutes);
 app.use("/api/notes", notesRouter);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/doubts", doubtRoutes);
+app.use("/api/answers", answerRoutes);
 
 Note.on("index", function (err) {
   if (err) {
@@ -28,16 +30,17 @@ Note.on("index", function (err) {
     console.log("Note text index ready");
   }
 });
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log("MongoDB connected");
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err.message);
   });
-})
-.catch((err) => {
-  console.error("MongoDB connection error:", err.message);
-});
