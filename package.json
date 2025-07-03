@@ -3,7 +3,7 @@
     "@tailwindcss/postcss": "^4.1.10"
   },
   "dependencies": {
-    "cloudinary": "^2.7.0",
+    "cloudinary": "1.41.3",
     "jsonwebtoken": "^9.0.2",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
