@@ -6,18 +6,45 @@ import SignUp from './components/SignUp';
 import NotesUploadPage from './components/NotesUploadPage';
 import NotesBrowsingPage from './components/NotesBrowsingPage';
 import NotesPage from "./pages/NotesPage"; 
+import Dashboard from './pages/Dashboard';
 import AuthSuccess from './components/AuthSuccess'; 
 import PrivateRoute from './components/PrivateRoute';
+import NoteDetailsPage from './pages/NoteDetailsPage';
+import PublicRoute from './components/PublicRoute';
+import ForgotPassword from './components/ForgotPassword';
 
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
-        <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/notes" element={<NotesPage />} />
+          <Route 
+          path="/dashboard" 
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route 
+          path="/notes" 
+          element={
+            <PrivateRoute>
+              <NotesPage />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/notes/:id" 
+          element={
+            <PrivateRoute>
+              <NoteDetailsPage />
+            </PrivateRoute>
+          } 
+        /> 
         <Route 
           path="/upload" 
           element={
@@ -35,6 +62,7 @@ function App() {
           } 
         />
         <Route path="/auth/success" element={<AuthSuccess />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </Router>
   );

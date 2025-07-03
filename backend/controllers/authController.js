@@ -1,46 +1,31 @@
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-require('dotenv').config();
 
-exports.registerUser = async (req, res) => {
-  console.log('Received body:', req.body);
-  const { username, email, password } = req.body;
+const protect = (req, res, next) => {
+  let token;
 
-  try {
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
 
-    user = new User({
-      username,
-      email,
-      password,
-    });
+    
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
-
-    await user.save();
-
-    const payload = {
-      user: {
-        id: user.id,
-      },
-    };
-
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '5h' },
-      (err, token) => {
-        if (err) throw err;
-        res.status(201).json({ token });
+    
+      req.user = decoded.user;
+      next();
+    } catch (err) {
+      console.error("Auth error:", err);
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ message: "jwt expired" });
       }
-    );
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+      return res.status(401).json({ message: "Invalid token" });
+    }
+  } else {
+    return res.status(401).json({ message: "No token provided" });
   }
 };
+
+module.exports = protect;

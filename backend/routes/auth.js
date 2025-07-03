@@ -1,9 +1,11 @@
-
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const User = require('../models/User');
+const Note = require('../models/Note');
+const Review = require('../models/Review');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
@@ -111,5 +113,87 @@ router.get('/google/callback',
     }
   }
 );
+
+// Dashboard stats endpoint
+router.get('/dashboard-stats', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Dates for this month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const endOfMonth = new Date(startOfMonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+
+    // Uploaded notes
+    const uploadedNotes = await Note.countDocuments({ uploadedBy: userId });
+    const uploadedThisMonth = await Note.countDocuments({
+      uploadedBy: userId,
+      createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+    });
+
+    // Downloaded notes
+    const downloadedNotes = await Note.countDocuments({ downloadedBy: userId });
+    const downloadedThisMonth = await Note.countDocuments({
+      downloadedBy: userId,
+      createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+    });
+
+    // Reviews received (for notes uploaded by user)
+    const userNotes = await Note.find({ uploadedBy: userId }).select('_id');
+    const userNoteIds = userNotes.map(n => n._id);
+    const reviewsReceived = await Review.countDocuments({ note: { $in: userNoteIds } });
+    const reviewsThisMonth = await Review.countDocuments({
+      note: { $in: userNoteIds },
+      createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+    });
+    const allReviews = await Review.find({ note: { $in: userNoteIds } });
+    const averageRating = allReviews.length > 0 ?
+      (allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / allReviews.length).toFixed(2) : 0;
+
+    res.json({
+      user: {
+        username: user.username || user.name || 'User',
+        joinDate: user.createdAt
+      },
+      stats: {
+        uploadedNotes,
+        downloadedNotes,
+        reviewsReceived,
+        uploadedThisMonth,
+        downloadedThisMonth,
+        reviewsThisMonth,
+        averageRating: Number(averageRating)
+      }
+    });
+  } catch (err) {
+    console.error('Dashboard stats error:', err);
+    res.status(500).json({ message: 'Failed to load dashboard stats' });
+  }
+});
+
+// Forgot Password Endpoint
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+  try {
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    if (!user) {
+      // For security, do not reveal if the email is not registered
+      return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
+    }
+    // Here you would generate a token and send an email
+    // For now, just simulate success
+    return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
 
 module.exports = router;

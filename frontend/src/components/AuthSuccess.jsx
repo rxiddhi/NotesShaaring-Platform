@@ -9,6 +9,8 @@ export default function AuthSuccess() {
     const token = params.get('token');
     if (token) {
       localStorage.setItem('token', token);
+ 
+      window.dispatchEvent(new Event('authChange'));
       navigate('/');
     } 
     

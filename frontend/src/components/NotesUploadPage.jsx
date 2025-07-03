@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
-import Navbar from "./Navbar";
 
 export default function NotesUploadPage() {
   const [title, setTitle] = useState("");
@@ -15,7 +14,8 @@ export default function NotesUploadPage() {
 
     const file = fileInputRef.current?.files[0];
     if (!file) {
-      alert("Please upload a file before submitting.");
+      setToastColor("bg-red-500");
+      setToastMessage("❌ Please select a file before submitting.");
       return;
     }
 
@@ -27,6 +27,12 @@ export default function NotesUploadPage() {
 
     try {
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        setToastColor("bg-red-500");
+        setToastMessage("⚠️ You must be logged in to upload.");
+        return;
+      }
 
       await axios.post("http://localhost:3000/api/notes", formData, {
         headers: {
@@ -43,11 +49,19 @@ export default function NotesUploadPage() {
       setDescription("");
       fileInputRef.current.value = "";
     } catch (error) {
-      console.error("❌ Upload failed:", error.response?.data || error.message);
-      setToastColor("bg-red-500");
-      setToastMessage(
-        error.response?.data?.message || "Upload failed. Please try again."
-      );
+      console.error("❌ Upload failed:", error);
+
+      if (error.response?.status === 401) {
+        setToastColor("bg-red-500");
+        setToastMessage("🔒 Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        setTimeout(() => (window.location.href = "/login"), 2000);
+      } else {
+        setToastColor("bg-red-500");
+        setToastMessage(
+          error.response?.data?.message || "Upload failed. Please try again."
+        );
+      }
     }
 
     setTimeout(() => setToastMessage(""), 3000);
@@ -56,6 +70,8 @@ export default function NotesUploadPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6 font-sans flex justify-center items-center px-4 py-10">
       <div className="w-full max-w-4xl bg-white shadow-2xl rounded-3xl p-10 space-y-6">
+       
+
         <div className="text-center">
           <h1 className="text-3xl font-bold text-indigo-700">Upload Your Notes</h1>
           <p className="text-gray-500 mt-2">

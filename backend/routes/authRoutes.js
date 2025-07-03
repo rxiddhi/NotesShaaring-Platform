@@ -1,13 +1,14 @@
-
-
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const authMiddleware = require('../middlewares/authMiddleware');
 const User = require('../models/User'); 
+const Note = require('../models/Note');
+const Review = require('../models/Review');
 
 const router = express.Router();
+
 
 router.post('/signup', async (req, res) => {
   try {
@@ -25,17 +26,11 @@ router.post('/signup', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword,
-    });
-
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
     const token = jwt.sign(
-      { id: newUser._id, username: newUser.username },
+      { userId: newUser._id },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -43,11 +38,7 @@ router.post('/signup', async (req, res) => {
     res.status(201).json({
       token,
       message: 'User registered successfully',
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email
-      }
+      user: { id: newUser._id, username: newUser.username, email: newUser.email }
     });
 
   } catch (err) {
@@ -56,26 +47,20 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// Login Route
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
-    }
+    if (!email || !password) return res.status(400).json({ message: 'Email and password are required' });
 
     const user = await User.findOne({ email: email.trim().toLowerCase() });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
+    if (!user) return res.status(401).json({ message: 'Invalid email or password' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
+    if (!isMatch) return res.status(401).json({ message: 'Invalid email or password' });
 
     const token = jwt.sign(
-      { id: user._id, username: user.username },
+      { userId: user._id },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -83,11 +68,7 @@ router.post('/login', async (req, res) => {
     res.status(200).json({
       token,
       message: 'Login successful',
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email
-      }
+      user: { id: user._id, username: user.username, email: user.email }
     });
 
   } catch (err) {
@@ -96,23 +77,16 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Protected Route - Get Current User Info
 router.get('/me', authMiddleware, (req, res) => {
-  res.json({
-    message: 'This is protected user data',
-    user: req.user
-  });
+  res.json({ message: 'This is protected user data', user: req.user });
 });
 
-// Protected Route - Upload Access Check
+
 router.get('/upload', authMiddleware, (req, res) => {
-  res.json({
-    message: 'You are allowed to upload notes!',
-    user: req.user
-  });
+  res.json({ message: 'You are allowed to upload notes!', user: req.user });
 });
 
-// Google Signup/Login
+
 router.get('/google-signup',
   passport.authenticate('google', { scope: ['profile', 'email'], state: 'signup' })
 );
@@ -144,5 +118,71 @@ router.get('/google/callback',
     }
   }
 );
+
+
+router.get('/dashboard-stats', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const endOfMonth = new Date(startOfMonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+
+    const uploadedNotes = await Note.countDocuments({ uploadedBy: userId });
+    const uploadedThisMonth = await Note.countDocuments({
+      uploadedBy: userId,
+      createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+    });
+
+    const downloadedNotes = await Note.countDocuments({ downloadedBy: userId });
+    const downloadedThisMonth = await Note.countDocuments({
+      downloadedBy: userId,
+      createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+    });
+
+    const userNotes = await Note.find({ uploadedBy: userId }).select('_id');
+    const userNoteIds = userNotes.map(n => n._id);
+
+    const reviewsReceived = await Review.countDocuments({ note: { $in: userNoteIds } });
+    const reviewsThisMonth = await Review.countDocuments({
+      note: { $in: userNoteIds },
+      createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+    });
+
+    const allReviews = await Review.find({ note: { $in: userNoteIds } });
+    const averageRating = allReviews.length > 0
+      ? (allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / allReviews.length).toFixed(2)
+      : 0;
+
+    res.json({
+      user: { username: user.username || user.name || 'User', joinDate: user.createdAt },
+      stats: {
+        uploadedNotes,
+        downloadedNotes,
+        reviewsReceived,
+        uploadedThisMonth,
+        downloadedThisMonth,
+        reviewsThisMonth,
+        averageRating: Number(averageRating)
+      }
+    });
+  } catch (err) {
+    console.error('Dashboard stats error:', err);
+    res.status(500).json({ message: 'Failed to load dashboard stats' });
+  }
+});
+
+
+router.post('/forgot-password', (req, res) => {
+  res.status(501).json({ message: 'Forgot password not implemented yet.' });
+});
+
+router.post('/reset-password/:token', (req, res) => {
+  res.status(501).json({ message: 'Reset password not implemented yet.' });
+});
 
 module.exports = router;
