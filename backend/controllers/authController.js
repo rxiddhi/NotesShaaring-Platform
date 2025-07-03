@@ -47,7 +47,7 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-// Forgot Password
+
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
@@ -55,13 +55,13 @@ exports.forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'No user with that email' });
     }
-    // Generate token
+  
     const token = crypto.randomBytes(32).toString('hex');
     user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    user.resetPasswordExpires = Date.now() + 3600000; 
     await user.save();
 
-    // Send email
+
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -87,7 +87,7 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-// Reset Password
+
 exports.resetPassword = async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;

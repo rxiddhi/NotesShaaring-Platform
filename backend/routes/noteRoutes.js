@@ -4,39 +4,43 @@ const router = express.Router();
 const upload = require("../config/multer.js");
 const Note = require("../models/Note.js");
 
-// Upload a new note
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
     const { title, subject, description } = req.body;
 
-    if (!req.file) return res.status(400).json({ message: "File is required" });
+    if (!req.file) {
+      return res.status(400).json({ message: "File is required" });
+    }
 
     const newNote = new Note({
       title,
       subject,
       description,
-      fileUrl: `/uploads/${req.file.filename}`,
+      fileUrl: req.file.path, 
       uploadedBy: req.user.userId,
       downloadedBy: [],
       downloadCount: 0,
     });
 
     await newNote.save();
-    res
-      .status(201)
-      .json({ message: "Note uploaded successfully", note: newNote });
+
+    res.status(201).json({
+      message: "Note uploaded successfully",
+      note: newNote,
+    });
   } catch (err) {
     console.error("Upload error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// Get all notes
+
 router.get("/", async (req, res) => {
   try {
     const notes = await Note.find()
       .sort({ createdAt: -1 })
       .populate("uploadedBy", "username email");
+
     res.status(200).json({ notes });
   } catch (err) {
     console.error("Fetch notes error:", err);
@@ -44,14 +48,16 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get single note by ID
+
 router.get("/:id", async (req, res) => {
   try {
     const note = await Note.findById(req.params.id).populate(
       "uploadedBy",
       "username email"
     );
+
     if (!note) return res.status(404).json({ message: "Note not found" });
+
     res.status(200).json({ note });
   } catch (err) {
     console.error("Fetch single note error:", err);
@@ -59,7 +65,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Track download
+
 router.put("/:id/download", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -69,6 +75,7 @@ router.put("/:id/download", protect, async (req, res) => {
     if (!note.downloadedBy.includes(userId)) {
       note.downloadedBy.push(userId);
     }
+
     note.downloadCount += 1;
     await note.save();
 
@@ -79,7 +86,7 @@ router.put("/:id/download", protect, async (req, res) => {
   }
 });
 
-// Delete note
+
 router.delete("/:id", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
