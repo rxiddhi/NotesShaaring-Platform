@@ -126,6 +126,8 @@ const NotesBrowsingPage = () => {
           return (b.downloadCount || 0) - (a.downloadCount || 0);
         case "title":
           return a.title.localeCompare(b.title);
+        case "reviewed":
+          return (b.reviewCount || 0) - (a.reviewCount || 0);
         default:
           return 0;
       }
@@ -196,6 +198,7 @@ const NotesBrowsingPage = () => {
           <option value="oldest">Oldest</option>
           <option value="popular">Most Popular</option>
           <option value="title">Title A-Z</option>
+          <option value="reviewed">Reviewed</option>
         </select>
       </div>
 
@@ -227,6 +230,7 @@ const NotesBrowsingPage = () => {
             <div className="text-xs text-slate-400 flex justify-between mt-3">
               <span>{note.downloadCount || 0} downloads</span>
               <span>PDF</span>
+              <span>{note.reviewCount || 0} reviews</span>
             </div>
 
             <div className="mt-4 flex justify-between items-center gap-2">

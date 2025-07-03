@@ -3,6 +3,7 @@ const protect = require("../middlewares/authMiddleware");
 const router = express.Router();
 const upload = require("../config/multer"); 
 const Note = require("../models/Note");
+const Review = require("../models/Review");
 
 
 router.post("/", protect, upload.single("file"), async (req, res) => {
@@ -38,11 +39,28 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
+    // Get all notes
     const notes = await Note.find()
       .sort({ createdAt: -1 })
       .populate("uploadedBy", "username email");
 
-    res.status(200).json({ notes });
+    // Get review counts for all notes
+    const reviewCounts = await Review.aggregate([
+      { $group: { _id: "$note", count: { $sum: 1 } } }
+    ]);
+    const reviewCountMap = {};
+    reviewCounts.forEach(rc => {
+      reviewCountMap[rc._id.toString()] = rc.count;
+    });
+
+    // Attach reviewCount to each note
+    const notesWithReviewCount = notes.map(note => {
+      const n = note.toObject();
+      n.reviewCount = reviewCountMap[n._id.toString()] || 0;
+      return n;
+    });
+
+    res.status(200).json({ notes: notesWithReviewCount });
   } catch (err) {
     console.error("Fetch notes error:", err);
     res.status(500).json({ message: "Failed to fetch notes" });
