@@ -140,7 +140,7 @@ const NotesPage = () => {
             setSelectedNoteId(note._id);
             setModalOpen(true);
           }}
-          className="text-blue-600 hover:underline text-sm mt-2 inline-block"
+          className="mt-3 w-full py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl shadow-md hover:from-purple-600 hover:to-blue-600 font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
           Add/View Reviews
         </button>
