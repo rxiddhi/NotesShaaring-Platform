@@ -9,13 +9,13 @@ const protect = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    
-    req.user = { userId: decoded.id }; 
-
-    console.log("Decoded JWT:", decoded);
+    req.user = { userId: decoded.id };
     next();
   } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      console.warn("⚠️ Token expired at:", err.expiredAt);
+      return res.status(401).json({ message: "Token expired" });
+    }
     console.error("Auth error:", err);
     res.status(401).json({ message: "Invalid token" });
   }
