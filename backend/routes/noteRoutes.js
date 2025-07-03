@@ -101,4 +101,33 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
+
+router.patch(
+  "/:id",
+  protect,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const note = await Note.findById(req.params.id);
+      if (!note) return res.status(404).json({ message: "Note not found" });
+
+      if (note.uploadedBy.toString() !== req.user.userId) {
+        return res.status(403).json({ message: "Unauthorized to edit this note" });
+      }
+
+      // Update fields if provided
+      if (req.body.title) note.title = req.body.title;
+      if (req.body.subject) note.subject = req.body.subject;
+      if (req.body.description) note.description = req.body.description;
+      if (req.file) note.fileUrl = req.file.path;
+
+      await note.save();
+      res.status(200).json({ message: "Note updated successfully", note });
+    } catch (err) {
+      console.error("Update note error:", err);
+      res.status(500).json({ message: "Server error while updating note" });
+    }
+  }
+);
+
 module.exports = router;
