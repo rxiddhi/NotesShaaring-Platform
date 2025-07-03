@@ -9,7 +9,7 @@ export default function AuthSuccess() {
     const token = params.get('token');
     if (token) {
       localStorage.setItem('token', token);
-      // Dispatch authChange event to update Navbar immediately
+ 
       window.dispatchEvent(new Event('authChange'));
       navigate('/');
     } 

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { Link } from 'react-router-dom';
 import ReviewList from '../components/Reviews/ReviewList';
 
 const NotesPage = () => {
@@ -26,7 +25,7 @@ const NotesPage = () => {
 
   const fetchNotes = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/notes');
+      const res = await axios.get('/api/notes');
       setNotes(res.data.notes);
     } catch (err) {
       console.error('Failed to fetch notes:', err);
@@ -43,7 +42,7 @@ const NotesPage = () => {
     if (!window.confirm('Are you sure you want to delete this note?')) return;
     setDeleting(noteId);
     try {
-      await axios.delete(`http://localhost:3000/api/notes/${noteId}`, {
+      await axios.delete(`/api/notes/${noteId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotes(notes.filter(note => note._id !== noteId));
@@ -62,24 +61,28 @@ const NotesPage = () => {
 
     setDownloading(note._id);
     try {
-      await axios.put(`http://localhost:3000/api/notes/${note._id}/download`, {}, {
+      // Track download count
+      await axios.put(`/api/notes/${note._id}/download`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const fileRes = await axios.get(`http://localhost:3000${note.fileUrl}`, {
+      // Download the file from Cloudinary
+      const fileRes = await axios.get(note.fileUrl, {
         responseType: 'blob',
       });
 
       const url = window.URL.createObjectURL(new Blob([fileRes.data]));
       const link = document.createElement('a');
-      const extension = note.fileUrl.split('.').pop();
+      const extension = note.fileUrl.split('.').pop().split('?')[0]; // Handle cloudinary URLs
       const filename = `${note.title || 'note'}.${extension}`;
       link.href = url;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
-      fetchNotes();
+      window.URL.revokeObjectURL(url);
+
+      fetchNotes(); // Refresh counts
     } catch (err) {
       alert('Download failed.');
       console.error(err);
@@ -102,7 +105,7 @@ const NotesPage = () => {
   });
 
   const renderNoteCard = (note) => {
-    const fileExt = note.fileUrl.split('.').pop().toUpperCase();
+    const fileExt = note.fileUrl.split('.').pop().split('?')[0].toUpperCase();
     return (
       <div key={note._id} className="bg-white rounded-xl shadow p-4 border">
         <h3 className="font-bold text-lg">{note.title}</h3>
@@ -144,7 +147,6 @@ const NotesPage = () => {
       </div>
     );
   };
-  
 
   return (
     <div className="p-6">
@@ -178,7 +180,7 @@ const NotesPage = () => {
         </>
       )}
 
-      {/* Modal for reviews */}
+  
       {modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm" style={{ background: 'rgba(255,255,255,0.3)' }}>
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
