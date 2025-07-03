@@ -93,6 +93,15 @@ The backend server will start on `http://localhost:3000`
 - Install nodemon globally if needed: `npm install -g nodemon`
 - Make sure you have all dependencies installed: `npm install`
 
+## 🤝 Contributors
+
+- Vipul Yadav
+- Mridul
+- Riddhi Khera
+- Nitin Sahu
+- Ananya Gupta
+- Amrit Kumar Mahto
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -100,3 +109,5 @@ The backend server will start on `http://localhost:3000`
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+
