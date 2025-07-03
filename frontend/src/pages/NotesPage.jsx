@@ -76,31 +76,34 @@ const NotesPage = () => {
       alert("Please log in to download notes.");
       return;
     }
-
+  
     setDownloading(note._id);
     try {
-      // Track download count
       await axios.put(`/api/notes/${note._id}/download`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      // Download the file from Cloudinary
-      const fileRes = await axios.get(note.fileUrl, {
-        responseType: 'blob',
-      });
-
-      const url = window.URL.createObjectURL(new Blob([fileRes.data]));
+  
+      const response = await axios.get(note.fileUrl, { responseType: 'blob' });
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+  
       const link = document.createElement('a');
-      const extension = note.fileUrl.split('.').pop().split('?')[0]; // Handle cloudinary URLs
-      const filename = `${note.title || 'note'}.${extension}`;
+  
+      // Sanitize title and enforce .pdf
+      const cleanTitle = (note.title || "note")
+        .replace(/[^a-zA-Z0-9_-]/g, "_")
+        .toLowerCase();
+      const filename = `${cleanTitle}.pdf`;
+  
       link.href = url;
       link.setAttribute('download', filename);
+  
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-
-      fetchNotes(); // Refresh counts
+  
+      fetchNotes(); // Refresh download count
     } catch (err) {
       alert('Download failed.');
       console.error(err);
@@ -108,6 +111,7 @@ const NotesPage = () => {
       setDownloading(null);
     }
   };
+  
 
   const uploadedNotes = notes.filter(note => {
     if (!note.uploadedBy) return false;

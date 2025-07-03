@@ -243,21 +243,37 @@ const NotesBrowsingPage = () => {
 
               <button
                 onClick={async () => {
-                  await trackDownload(note._id);
-                  fetch(note.fileUrl)
-                    .then((res) => res.blob())
-                    .then((blob) => {
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download = `${note.title}.pdf`;
-                      document.body.appendChild(a);
-                      a.click();
-                      a.remove();
-                      window.URL.revokeObjectURL(url);
-                    })
-                    .catch(() => alert("Download failed."));
+                  try {
+                    await trackDownload(note._id);
+
+                    const response = await fetch(note.fileUrl);
+                    if (!response.ok) throw new Error("Download failed");
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+
+                    // ✅ Get extension correctly
+                    const urlPath = new URL(note.fileUrl).pathname;
+                    const fileExtMatch = urlPath.match(/\.(\w+)(?:\?|$)/);
+                    const fileExt = fileExtMatch ? fileExtMatch[1] : "pdf";
+
+                    const safeTitle = (note.title || "note").replace(/[^a-z0-9]/gi, "_").toLowerCase();
+
+                    a.href = url;
+                    a.download = `${safeTitle}.${fileExt}`;
+
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                  } catch (err) {
+                    console.error("Download error:", err);
+                    alert("Download failed. Please try again.");
+                  }
                 }}
+
+
                 className="flex-1 py-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-md flex justify-center items-center gap-2 hover:scale-105 transition shadow"
               >
                 <FaDownload /> Download

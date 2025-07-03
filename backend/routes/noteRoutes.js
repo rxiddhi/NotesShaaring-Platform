@@ -1,11 +1,13 @@
 const express = require("express");
 const protect = require("../middlewares/authMiddleware");
 const router = express.Router();
-const upload = require("../config/multer"); 
+const upload = require("../config/multer");
 const Note = require("../models/Note");
 const Review = require("../models/Review");
+const path = require("path");
+const fs = require("fs");
 
-
+// Upload a new note
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
     const { title, subject, description } = req.body;
@@ -19,7 +21,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
       subject,
       description,
       fileUrl: req.file.path,
-      uploadedBy: req.user.userId, 
+      uploadedBy: req.user.userId,
       downloadedBy: [],
       downloadCount: 0,
     });
@@ -36,15 +38,13 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
   }
 });
 
-
+// Get all notes with review count
 router.get("/", async (req, res) => {
   try {
-    // Get all notes
     const notes = await Note.find()
       .sort({ createdAt: -1 })
       .populate("uploadedBy", "username email");
 
-    // Get review counts for all notes
     const reviewCounts = await Review.aggregate([
       { $group: { _id: "$note", count: { $sum: 1 } } }
     ]);
@@ -53,7 +53,6 @@ router.get("/", async (req, res) => {
       reviewCountMap[rc._id.toString()] = rc.count;
     });
 
-    // Attach reviewCount to each note
     const notesWithReviewCount = notes.map(note => {
       const n = note.toObject();
       n.reviewCount = reviewCountMap[n._id.toString()] || 0;
@@ -67,7 +66,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-
+// Get a single note
 router.get("/:id", async (req, res) => {
   try {
     const note = await Note.findById(req.params.id).populate("uploadedBy", "username email");
@@ -80,7 +79,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-
+// Track downloads
 router.put("/:id/download", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -101,7 +100,7 @@ router.put("/:id/download", protect, async (req, res) => {
   }
 });
 
-
+// Delete a note
 router.delete("/:id", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -119,33 +118,56 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
+// Update a note
+router.patch("/:id", protect, upload.single("file"), async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: "Note not found" });
 
-router.patch(
-  "/:id",
-  protect,
-  upload.single("file"),
-  async (req, res) => {
-    try {
-      const note = await Note.findById(req.params.id);
-      if (!note) return res.status(404).json({ message: "Note not found" });
-
-      if (note.uploadedBy.toString() !== req.user.userId) {
-        return res.status(403).json({ message: "Unauthorized to edit this note" });
-      }
-
-      // Update fields if provided
-      if (req.body.title) note.title = req.body.title;
-      if (req.body.subject) note.subject = req.body.subject;
-      if (req.body.description) note.description = req.body.description;
-      if (req.file) note.fileUrl = req.file.path;
-
-      await note.save();
-      res.status(200).json({ message: "Note updated successfully", note });
-    } catch (err) {
-      console.error("Update note error:", err);
-      res.status(500).json({ message: "Server error while updating note" });
+    if (note.uploadedBy.toString() !== req.user.userId) {
+      return res.status(403).json({ message: "Unauthorized to edit this note" });
     }
+
+    if (req.body.title) note.title = req.body.title;
+    if (req.body.subject) note.subject = req.body.subject;
+    if (req.body.description) note.description = req.body.description;
+    if (req.file) note.fileUrl = req.file.path;
+
+    await note.save();
+    res.status(200).json({ message: "Note updated successfully", note });
+  } catch (err) {
+    console.error("Update note error:", err);
+    res.status(500).json({ message: "Server error while updating note" });
   }
-);
+});
+
+// Download actual file
+router.get("/:id/download-file", async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: "Note not found" });
+
+    const filePath = note.fileUrl;
+
+    // If file is stored on Cloudinary (http/https link), redirect to it
+    if (filePath.startsWith("http")) {
+      return res.redirect(filePath);
+    }
+
+    // Otherwise, try to stream it from local storage
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${path.basename(filePath)}"`);
+
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (err) {
+    console.error("File download error:", err);
+    res.status(500).json({ message: "Server error while downloading file" });
+  }
+});
 
 module.exports = router;
