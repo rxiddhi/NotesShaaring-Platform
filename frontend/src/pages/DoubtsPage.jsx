@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
-
-const mockDoubts = [
-    { id: 1, title: 'How does useEffect work?', author: 'Alice', date: '2025-07-01', time: '10:30', subject: 'React', answers: [] },
-    { id: 2, title: 'Difference between var, let, const?', author: 'Bob', date: '2025-06-29', time: '14:15', subject: 'JavaScript', answers: [] },
-    { id: 3, title: 'What is the virtual DOM?', author: 'Charlie', date: '2025-07-02', time: '09:05', subject: 'React', answers: [] },
-];
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 const SUBJECTS = [
     'General',
@@ -18,73 +15,115 @@ const SUBJECTS = [
 ];
 
 export default function DoubtsPage() {
-    const [doubts, setDoubts] = useState(mockDoubts);
+    const [doubts, setDoubts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortType, setSortType] = useState('newest');
     const [newDoubt, setNewDoubt] = useState('');
     const [newSubject, setNewSubject] = useState(SUBJECTS[0]);
-    const [answerInputs, setAnswerInputs] = useState({});
+    const [editingId, setEditingId] = useState(null);
+    const [editTitle, setEditTitle] = useState('');
+    const [editSubject, setEditSubject] = useState(SUBJECTS[0]);
+    const navigate = useNavigate();
+
+    // Get current userId from token
+    let currentUserId = null;
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            currentUserId = decoded.userId || decoded.id || decoded.sub;
+        } catch {
+            currentUserId = null;
+        }
+    }
 
     useEffect(() => {
-        let filtered = [...mockDoubts].filter((d) =>
-            d.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        fetchDoubts();
+    }, []);
 
-        if (sortType === 'newest') {
-            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-        } else if (sortType === 'oldest') {
-            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
-        } else if (sortType === 'az') {
-            filtered.sort((a, b) => a.title.localeCompare(b.title));
+    const fetchDoubts = async () => {
+        try {
+            const res = await axios.get('/api/doubts');
+            setDoubts(res.data.doubts || []);
+        } catch {
+            setDoubts([]);
         }
+    };
 
-        setDoubts(filtered);
-    }, [searchTerm, sortType]);
-
-    const handlePost = () => {
+    const handlePost = async () => {
         if (newDoubt.trim() !== '') {
-            const now = new Date();
-            const newEntry = {
-                id: doubts.length + 1,
-                title: newDoubt,
-                author: 'You',
-                date: now.toISOString().split('T')[0],
-                time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                subject: newSubject,
-                answers: [],
-            };
-            setDoubts([newEntry, ...doubts]);
-            setNewDoubt('');
-            setNewSubject(SUBJECTS[0]);
+            try {
+                const token = localStorage.getItem('token');
+                const res = await axios.post('/api/doubts', {
+                    title: newDoubt,
+                    subject: newSubject,
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setDoubts([res.data.doubt, ...doubts]);
+                setNewDoubt('');
+                setNewSubject(SUBJECTS[0]);
+            } catch {
+                // handle error
+            }
         }
     };
 
-    const handleAnswerInput = (doubtId, value) => {
-        setAnswerInputs((prev) => ({ ...prev, [doubtId]: value }));
+    const handleEdit = (doubt) => {
+        setEditingId(doubt._id);
+        setEditTitle(doubt.title);
+        setEditSubject(doubt.subject);
     };
 
-    const handlePostAnswer = (doubtId) => {
-        const answer = answerInputs[doubtId]?.trim();
-        if (!answer) return;
-        setDoubts((prevDoubts) =>
-            prevDoubts.map((d) =>
-                d.id === doubtId
-                    ? {
-                          ...d,
-                          answers: [
-                              ...d.answers,
-                              {
-                                  text: answer,
-                                  author: 'You',
-                                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                              },
-                          ],
-                      }
-                    : d
-            )
-        );
-        setAnswerInputs((prev) => ({ ...prev, [doubtId]: '' }));
+    const handleEditSave = async (doubtId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.put(`/api/doubts/${doubtId}`, {
+                title: editTitle,
+                subject: editSubject,
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setDoubts(doubts.map(d => d._id === doubtId ? res.data.doubt : d));
+            setEditingId(null);
+        } catch (err) {
+            if (err.response && err.response.status === 404) {
+                alert('This doubt no longer exists. The list will refresh.');
+                fetchDoubts();
+                setEditingId(null);
+            } else {
+                // handle other errors
+            }
+        }
     };
+
+    const handleDelete = async (doubtId) => {
+        if (!window.confirm('Delete this doubt?')) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`/api/doubts/${doubtId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setDoubts(doubts.filter(d => d._id !== doubtId));
+        } catch (err) {
+            if (err.response && err.response.status === 404) {
+                alert('This doubt was already deleted. The list will refresh.');
+                fetchDoubts();
+            } else {
+                // handle other errors
+            }
+        }
+    };
+
+    // Filter and sort doubts
+    const filteredDoubts = doubts
+        .filter((d) => d.title.toLowerCase().includes(searchTerm.toLowerCase()))
+        .sort((a, b) => {
+            if (sortType === 'newest') return new Date(b.timestamp) - new Date(a.timestamp);
+            if (sortType === 'oldest') return new Date(a.timestamp) - new Date(b.timestamp);
+            if (sortType === 'az') return a.title.localeCompare(b.title);
+            return 0;
+        });
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 font-sans px-4 py-10">
@@ -138,56 +177,50 @@ export default function DoubtsPage() {
 
                 {/* Doubts list */}
                 <div className="grid gap-6 mt-8">
-                    {doubts.length === 0 ? (
+                    {filteredDoubts.length === 0 ? (
                         <div className="bg-white rounded-2xl shadow p-8 text-center text-gray-500 text-lg border-t-4 border-pink-300">
                             No doubts found. Be the first to post!
                         </div>
                     ) : (
-                        doubts.map((doubt) => (
-                            <div key={doubt.id} className="bg-white rounded-2xl shadow-lg border-t-4 border-indigo-300 hover:scale-[1.01] transition-transform">
+                        filteredDoubts.map((doubt) => (
+                            <div key={doubt._id} className="bg-white rounded-2xl shadow-lg border-t-4 border-indigo-300 hover:scale-[1.01] transition-transform cursor-pointer group" onClick={() => editingId ? null : navigate(`/doubts/${doubt._id}`)}>
                                 <div className="p-6">
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">{doubt.subject}</span>
                                     </div>
-                                    <h3 className="font-bold text-2xl text-purple-700 mb-2">{doubt.title}</h3>
-                                    <p className="text-sm text-gray-500 mb-1 flex flex-wrap gap-2 items-center">
-                                        By <span className="font-semibold text-indigo-600">{doubt.author}</span> on {doubt.date} <span className="text-gray-400">at {doubt.time}</span>
-                                    </p>
-
-                                    {/* Answers Section */}
-                                    <div className="mt-4">
-                                        <h4 className="font-semibold text-base text-gray-700 mb-2">Answers</h4>
-                                        {doubt.answers.length === 0 ? (
-                                            <p className="text-gray-400 text-sm mb-2">No answers yet. Be the first to answer!</p>
-                                        ) : (
-                                            <ul className="space-y-2 mb-2">
-                                                {doubt.answers.map((ans, idx) => (
-                                                    <li key={idx} className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
-                                                        <div className="flex justify-between items-center mb-1">
-                                                            <span className="font-medium text-indigo-700">{ans.author}</span>
-                                                            <span className="text-xs text-gray-400">{ans.time}</span>
-                                                        </div>
-                                                        <div className="text-gray-700 text-sm">{ans.text}</div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                        <div className="flex gap-2 mt-2">
+                                    {editingId === doubt._id ? (
+                                        <div className="flex flex-col md:flex-row gap-2 mb-2">
                                             <input
-                                                type="text"
-                                                placeholder="Add your answer..."
-                                                value={answerInputs[doubt.id] || ''}
-                                                onChange={(e) => handleAnswerInput(doubt.id, e.target.value)}
-                                                className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
+                                                value={editTitle}
+                                                onChange={e => setEditTitle(e.target.value)}
+                                                className="flex-1 p-2 border border-gray-300 rounded"
                                             />
-                                            <button
-                                                onClick={() => handlePostAnswer(doubt.id)}
-                                                className="px-4 py-2 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-600 text-sm"
+                                            <select
+                                                value={editSubject}
+                                                onChange={e => setEditSubject(e.target.value)}
+                                                className="p-2 border border-gray-300 rounded"
                                             >
-                                                Answer
-                                            </button>
+                                                {SUBJECTS.map((subject) => (
+                                                    <option key={subject} value={subject}>{subject}</option>
+                                                ))}
+                                            </select>
+                                            <button onClick={() => handleEditSave(doubt._id)} className="px-3 py-1 bg-green-500 text-white rounded">Save</button>
+                                            <button onClick={() => setEditingId(null)} className="px-3 py-1 bg-gray-300 rounded">Cancel</button>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <>
+                                            <h3 className="font-bold text-2xl text-purple-700 mb-2">{doubt.title}</h3>
+                                            <p className="text-sm text-gray-500 mb-1 flex flex-wrap gap-2 items-center">
+                                                By <span className="font-semibold text-indigo-600">{doubt.userId?.name || doubt.userId?.username || doubt.userId?.email || 'User'}</span> on {new Date(doubt.timestamp).toLocaleDateString()} <span className="text-gray-400">at {new Date(doubt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </p>
+                                        </>
+                                    )}
+                                    {currentUserId && doubt.userId && doubt.userId._id === currentUserId && !editingId && (
+                                        <div className="flex gap-2 mt-2">
+                                            <button onClick={e => { e.stopPropagation(); handleEdit(doubt); }} className="px-3 py-1 bg-yellow-400 text-white rounded">Edit</button>
+                                            <button onClick={e => { e.stopPropagation(); handleDelete(doubt._id); }} className="px-3 py-1 bg-red-500 text-white rounded">Delete</button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))
