@@ -11,7 +11,6 @@ const fs = require("fs");
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
     const { title, subject, description } = req.body;
-
     if (!req.file || !title || !subject) {
       return res.status(400).json({ message: "File, title, and subject are required" });
     }
@@ -48,6 +47,7 @@ router.get("/", async (req, res) => {
     const reviewCounts = await Review.aggregate([
       { $group: { _id: "$note", count: { $sum: 1 } } }
     ]);
+
     const reviewCountMap = {};
     reviewCounts.forEach(rc => {
       reviewCountMap[rc._id.toString()] = rc.count;
@@ -71,7 +71,6 @@ router.get("/:id", async (req, res) => {
   try {
     const note = await Note.findById(req.params.id).populate("uploadedBy", "username email");
     if (!note) return res.status(404).json({ message: "Note not found" });
-
     res.status(200).json({ note });
   } catch (err) {
     console.error("Fetch single note error:", err);
@@ -149,12 +148,12 @@ router.get("/:id/download-file", async (req, res) => {
 
     const filePath = note.fileUrl;
 
-    // If file is stored on Cloudinary (http/https link), redirect to it
+    // If file is stored on Cloudinary (http/https link), redirect
     if (filePath.startsWith("http")) {
       return res.redirect(filePath);
     }
 
-    // Otherwise, try to stream it from local storage
+    // If file is stored locally
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ message: "File not found" });
     }

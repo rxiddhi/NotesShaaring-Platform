@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const noteSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -41,11 +40,25 @@ const noteSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
 noteSchema.index({
   title: 'text',
   subject: 'text',
   description: 'text'
 });
-
 module.exports = mongoose.model('Note', noteSchema);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

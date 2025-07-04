@@ -7,8 +7,8 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => ({
     folder: process.env.CLOUDINARY_UPLOAD_FOLDER || "notes",
-    resource_type: "raw",
-    public_id: `${Date.now()}-${path.parse(file.originalname).name}`, // ✅ FIXED
+    resource_type: "auto", 
+    public_id: `${Date.now()}-${path.parse(file.originalname).name}`,
   }),
 });
 

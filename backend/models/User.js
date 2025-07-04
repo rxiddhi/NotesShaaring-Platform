@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema(
@@ -5,11 +6,6 @@ const userSchema = new mongoose.Schema(
     username: {
       type: String,
       trim: true,
-    },
-    name: {
-      type: String,
-      trim: true,
-      unique: true, 
     },
     email: {
       type: String,
@@ -27,12 +23,8 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
-    resetPasswordToken: {
-      type: String,
-    },
-    resetPasswordExpires: {
-      type: Date,
-    },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   {
     timestamps: true,

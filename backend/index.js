@@ -9,15 +9,16 @@ const initGooglePassport = require("./config/passport");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Allow requests from your frontend domain(s)
+// ✅ Define allowed origins
 const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:5173",
   "https://notes-sharingplatform.vercel.app",
-  "http://localhost:5173"
 ];
 
+// ✅ Set up CORS options
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -30,21 +31,19 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-
-
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-
+// ✅ Initialize Passport
 initGooglePassport();
 app.use(passport.initialize());
 
-
-app.use("/api/auth", require("./routes/auth"));
+// ✅ Routes
+app.use("/api/auth", require("./routes/auth")); 
 app.use("/api", require("./routes/authRoutes")); 
-app.use("/api/notes", require("./routes/noteRoutes")); 
-app.use("/api/notes", require("./routes/reviewRoutes")); 
+app.use("/api/notes", require("./routes/noteRoutes"));
+app.use("/api/reviews", require("./routes/reviewRoutes"));
 
-
+// ✅ Health Check Routes
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Notes Sharing Platform API" });
 });
@@ -52,7 +51,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-
+// ✅ Connect to DB and Start Server
 connectDB()
   .then(() => {
     app.listen(PORT, () => {

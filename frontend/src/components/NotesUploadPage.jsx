@@ -15,11 +15,10 @@ export default function NotesUploadPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const file = fileInputRef.current?.files[0];
     if (!file) {
       setToastColor("bg-red-500");
-      setToastMessage("❌ Please select a file before submitting.");
+      setToastMessage(":x: Please select a file before submitting.");
       return;
     }
 
@@ -31,10 +30,9 @@ export default function NotesUploadPage() {
 
     try {
       const token = localStorage.getItem("token");
-
       if (!token) {
         setToastColor("bg-red-500");
-        setToastMessage("⚠️ You must be logged in to upload.");
+        setToastMessage(":warning: You must be logged in to upload.");
         return;
       }
 
@@ -46,18 +44,16 @@ export default function NotesUploadPage() {
       });
 
       setToastColor("bg-green-500");
-      setToastMessage("✅ Notes uploaded successfully!");
-
+      setToastMessage(":white_check_mark: Notes uploaded successfully!");
       setTitle("");
       setSubject("");
       setDescription("");
       fileInputRef.current.value = "";
     } catch (error) {
-      console.error("❌ Upload failed:", error);
-
+      console.error(":x: Upload failed:", error);
       if (error.response?.status === 401) {
         setToastColor("bg-red-500");
-        setToastMessage("🔒 Session expired. Please log in again.");
+        setToastMessage(":lock: Session expired. Please log in again.");
         localStorage.removeItem("token");
         setTimeout(() => (window.location.href = "/login"), 2000);
       } else {
@@ -74,15 +70,10 @@ export default function NotesUploadPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6 font-sans flex justify-center items-center px-4 py-10">
       <div className="w-full max-w-4xl bg-white shadow-2xl rounded-3xl p-10 space-y-6">
-       
-
         <div className="text-center">
           <h1 className="text-3xl font-bold text-indigo-700">Upload Your Notes</h1>
-          <p className="text-gray-500 mt-2">
-            Help others by sharing your academic notes
-          </p>
+          <p className="text-gray-500 mt-2">Help others by sharing your academic notes</p>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -98,7 +89,6 @@ export default function NotesUploadPage() {
                 className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Subject <span className="text-red-500">*</span>
@@ -113,7 +103,6 @@ export default function NotesUploadPage() {
               />
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -128,7 +117,6 @@ export default function NotesUploadPage() {
                 className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none bg-gray-50"
               />
             </div>
-
             <div className="flex flex-col justify-between">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -147,7 +135,6 @@ export default function NotesUploadPage() {
               </p>
             </div>
           </div>
-
           <button
             type="submit"
             className="w-full py-3 text-white text-lg font-semibold rounded-xl transition duration-300 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-600 shadow-md hover:shadow-lg"
@@ -156,7 +143,6 @@ export default function NotesUploadPage() {
           </button>
         </form>
       </div>
-
       {toastMessage && (
         <div
           className={`fixed bottom-5 left-1/2 transform -translate-x-1/2 px-6 py-3 text-white rounded-xl shadow-lg z-50 ${toastColor}`}
