@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 // Allow requests from your frontend domain(s)
 const allowedOrigins = [
   "http://localhost:5173", // local dev
-  "https://your-frontend-domain.com", // replace with your deployed frontend URL
+  "https://notes-sharingplatform.vercel.app", 
 ];
 
 const corsOptions = {
