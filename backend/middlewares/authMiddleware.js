@@ -8,7 +8,7 @@ const protect = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { userId: decoded.id }; // or decoded.userId, depending on your payload
+    req.user = { userId: decoded.userId }; // Use userId for consistency
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {
