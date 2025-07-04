@@ -25,6 +25,31 @@ A full-stack MERN web application for uploading, sharing, and reviewing academic
 - ⭐ Rate and review uploaded notes _(future enhancement)_
 
 ---
+## 🖼️ Screenshots
+
+### 🏠 Home Page
+A clean landing page that invites users to explore or contribute notes.
+![Home Page](./screenshots/home.png)
+
+---
+
+### 🚀 How It Works
+A step-by-step guide for users to get started.
+![How It Works](./screenshots/how-it-works.png)
+
+---
+
+### ❓ Ask & Explore Doubts
+Users can post questions, search academic doubts, and share answers.
+![Doubts Page](./screenshots/doubts.png)
+
+---
+
+### 📤 Upload Notes
+Intuitive upload form with subject tagging and file support.
+![Upload Page](./screenshots/upload.png)
+
+---
 
 ## 🚀 Getting Started
 
@@ -93,6 +118,15 @@ The backend server will start on `http://localhost:3000`
 - Install nodemon globally if needed: `npm install -g nodemon`
 - Make sure you have all dependencies installed: `npm install`
 
+## 🤝 Contributors
+
+- Vipul Yadav
+- Mridul
+- Riddhi Khera
+- Nitin Sahu
+- Ananya Gupta
+- Amrit Kumar Mahto
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -100,3 +134,5 @@ The backend server will start on `http://localhost:3000`
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+

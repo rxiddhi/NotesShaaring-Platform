@@ -8,20 +8,23 @@ module.exports = function () {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: '/api/auth/google/callback',
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
         passReqToCallback: true,
       },
       async (req, accessToken, refreshToken, profile, done) => {
         try {
           const state = req.query.state;
+
+          const email = profile.emails[0].value;
+
           if (state === 'signup') {
-           
-            let user = await User.findOne({ email: profile.emails[0].value });
+            // Signup flow
+            let user = await User.findOne({ email });
             if (!user) {
               user = await User.create({
                 googleId: profile.id,
                 name: profile.displayName,
-                email: profile.emails[0].value,
+                email: email,
               });
               user._alreadyExists = false;
             } else {
@@ -29,18 +32,21 @@ module.exports = function () {
             }
             return done(null, user);
           } else {
-     
-            let user = await User.findOne({ email: profile.emails[0].value });
+            // Login flow
+            let user = await User.findOne({ email });
             if (!user) {
-        
-              return done(null, false, { message: 'No account found. Please sign up first.' });
+              return done(null, false, {
+                message: 'No account found. Please sign up first.',
+              });
             }
-          
+
+            // Link Google if not already linked
             if (!user.googleId) {
               user.googleId = profile.id;
               user.name = user.name || profile.displayName;
               await user.save();
             }
+
             return done(null, user);
           }
         } catch (err) {
@@ -49,4 +55,4 @@ module.exports = function () {
       }
     )
   );
-}; 
+};

@@ -1,8 +1,10 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
+
 const API_BASE_URL = import.meta.env.MODE === "production"
   ? "https://notenest-lzm0.onrender.com/api"
   : "http://localhost:3000/api";
+
 export default function NotesUploadPage() {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
@@ -10,6 +12,7 @@ export default function NotesUploadPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastColor, setToastColor] = useState("bg-green-500");
   const fileInputRef = useRef(null);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const file = fileInputRef.current?.files[0];
@@ -18,11 +21,13 @@ export default function NotesUploadPage() {
       setToastMessage(":x: Please select a file before submitting.");
       return;
     }
+
     const formData = new FormData();
     formData.append("title", title);
     formData.append("subject", subject);
     formData.append("description", description);
     formData.append("file", file);
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -30,12 +35,14 @@ export default function NotesUploadPage() {
         setToastMessage(":warning: You must be logged in to upload.");
         return;
       }
+
       await axios.post(`${API_BASE_URL}/notes`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
+
       setToastColor("bg-green-500");
       setToastMessage(":white_check_mark: Notes uploaded successfully!");
       setTitle("");
@@ -56,16 +63,16 @@ export default function NotesUploadPage() {
         );
       }
     }
+
     setTimeout(() => setToastMessage(""), 3000);
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6 font-sans flex justify-center items-center px-4 py-10">
       <div className="w-full max-w-4xl bg-white shadow-2xl rounded-3xl p-10 space-y-6">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-indigo-700">Upload Your Notes</h1>
-          <p className="text-gray-500 mt-2">
-            Help others by sharing your academic notes
-          </p>
+          <p className="text-gray-500 mt-2">Help others by sharing your academic notes</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -146,23 +153,3 @@ export default function NotesUploadPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

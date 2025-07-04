@@ -14,6 +14,7 @@ import NoteDetailsPage from './pages/NoteDetailsPage';
 import PublicRoute from './components/PublicRoute';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './pages/ResetPassword'; 
+import DoubtDetailPage from './pages/DoubtDetailPage';
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-  
+
         <Route 
           path="/dashboard" 
           element={<PrivateRoute><Dashboard /></PrivateRoute>} 
@@ -48,11 +49,14 @@ function App() {
           path="/doubts" 
           element={<PrivateRoute><DoubtsPage /></PrivateRoute>} 
         />
+        <Route 
+          path="/doubts/:id" 
+          element={<PrivateRoute><DoubtDetailPage /></PrivateRoute>} 
+        />
 
- 
         <Route path="/auth/success" element={<AuthSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} /> 
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
     </Router>
   );

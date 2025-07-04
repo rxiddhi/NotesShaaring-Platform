@@ -9,6 +9,10 @@ import {
   FaFilePdf,
 } from "react-icons/fa";
 
+const API_BASE_URL = import.meta.env.MODE === "production"
+  ? "https://notenest-lzm0.onrender.com/api"
+  : "http://localhost:3000/api";
+
 const NotesBrowsingPage = () => {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +37,7 @@ const NotesBrowsingPage = () => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/notes");
+        const res = await fetch(`${API_BASE_URL}/notes`);
         if (!res.ok) throw new Error("Failed to fetch notes");
 
         const data = await res.json();
@@ -78,7 +82,7 @@ const NotesBrowsingPage = () => {
   const trackDownload = async (noteId) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`http://localhost:3000/api/notes/${noteId}/download`, {
+      await fetch(`${API_BASE_URL}/notes/${noteId}/download`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -126,6 +130,8 @@ const NotesBrowsingPage = () => {
           return (b.downloadCount || 0) - (a.downloadCount || 0);
         case "title":
           return a.title.localeCompare(b.title);
+        case "reviewed":
+          return (b.reviewCount || 0) - (a.reviewCount || 0);
         default:
           return 0;
       }
@@ -196,6 +202,7 @@ const NotesBrowsingPage = () => {
           <option value="oldest">Oldest</option>
           <option value="popular">Most Popular</option>
           <option value="title">Title A-Z</option>
+          <option value="reviewed">Reviewed</option>
         </select>
       </div>
 
@@ -227,6 +234,7 @@ const NotesBrowsingPage = () => {
             <div className="text-xs text-slate-400 flex justify-between mt-3">
               <span>{note.downloadCount || 0} downloads</span>
               <span>PDF</span>
+              <span>{note.reviewCount || 0} reviews</span>
             </div>
 
             <div className="mt-4 flex justify-between items-center gap-2">
@@ -239,21 +247,37 @@ const NotesBrowsingPage = () => {
 
               <button
                 onClick={async () => {
-                  await trackDownload(note._id);
-                  fetch(note.fileUrl)
-                    .then((res) => res.blob())
-                    .then((blob) => {
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download = `${note.title}.pdf`;
-                      document.body.appendChild(a);
-                      a.click();
-                      a.remove();
-                      window.URL.revokeObjectURL(url);
-                    })
-                    .catch(() => alert("Download failed."));
+                  try {
+                    await trackDownload(note._id);
+
+                    const response = await fetch(note.fileUrl);
+                    if (!response.ok) throw new Error("Download failed");
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+
+                    // ✅ Get extension correctly
+                    const urlPath = new URL(note.fileUrl).pathname;
+                    const fileExtMatch = urlPath.match(/\.(\w+)(?:\?|$)/);
+                    const fileExt = fileExtMatch ? fileExtMatch[1] : "pdf";
+
+                    const safeTitle = (note.title || "note").replace(/[^a-z0-9]/gi, "_").toLowerCase();
+
+                    a.href = url;
+                    a.download = `${safeTitle}.${fileExt}`;
+
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                  } catch (err) {
+                    console.error("Download error:", err);
+                    alert("Download failed. Please try again.");
+                  }
                 }}
+
+
                 className="flex-1 py-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-md flex justify-center items-center gap-2 hover:scale-105 transition shadow"
               >
                 <FaDownload /> Download

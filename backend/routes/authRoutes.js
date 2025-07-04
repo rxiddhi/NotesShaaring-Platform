@@ -5,13 +5,14 @@ const crypto = require('crypto');
 const passport = require('passport');
 const authMiddleware = require('../middlewares/authMiddleware');
 const sendEmail = require('../utils/sendEmail');
+
 const User = require('../models/User');
 const Note = require('../models/Note');
 const Review = require('../models/Review');
 
 const router = express.Router();
 
-// Signup
+// -------------------- Local Signup --------------------
 router.post('/signup', async (req, res) => {
   try {
     let { username, email, password } = req.body;
@@ -44,7 +45,7 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// Login
+// -------------------- Local Login --------------------
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -70,19 +71,28 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Me (Test Route)
+// -------------------- Protected Routes --------------------
 router.get('/me', authMiddleware, (req, res) => {
   res.json({ message: 'This is protected user data', user: req.user });
 });
 
-// Upload (Test Route)
 router.get('/upload', authMiddleware, (req, res) => {
   res.json({ message: 'You are allowed to upload notes!', user: req.user });
 });
 
-// Google Auth Routes
+// -------------------- Google OAuth --------------------
 router.get('/google-signup', passport.authenticate('google', { scope: ['profile', 'email'], state: 'signup' }));
 router.get('/google-login', passport.authenticate('google', { scope: ['profile', 'email'], state: 'login' }));
+
+router.get('/google', (req, res, next) => {
+  const state = req.query.state || 'login';
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    state,
+    prompt: 'select_account',
+  })(req, res, next);
+});
+
 router.get('/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   async (req, res) => {
@@ -98,7 +108,7 @@ router.get('/google/callback',
   }
 );
 
-// Dashboard Stats
+// -------------------- Dashboard Stats --------------------
 router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -124,7 +134,7 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
     });
 
     const userNotes = await Note.find({ uploadedBy: userId }).select('_id');
-    const userNoteIds = userNotes.map(n => n._id);
+    const userNoteIds = userNotes.map((n) => n._id);
 
     const reviewsReceived = await Review.countDocuments({ note: { $in: userNoteIds } });
     const reviewsThisMonth = await Review.countDocuments({
@@ -133,9 +143,10 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
     });
 
     const allReviews = await Review.find({ note: { $in: userNoteIds } });
-    const averageRating = allReviews.length > 0
-      ? (allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / allReviews.length).toFixed(2)
-      : 0;
+    const averageRating =
+      allReviews.length > 0
+        ? (allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / allReviews.length).toFixed(2)
+        : 0;
 
     res.json({
       user: { username: user.username || user.name || 'User', joinDate: user.createdAt },
@@ -155,7 +166,7 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Forgot Password
+// -------------------- Forgot Password --------------------
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Email is required' });
@@ -189,7 +200,7 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// ✅ Reset Password
+// -------------------- Reset Password --------------------
 router.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
