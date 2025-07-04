@@ -25,6 +25,31 @@ A full-stack MERN web application for uploading, sharing, and reviewing academic
 - ⭐ Rate and review uploaded notes _(future enhancement)_
 
 ---
+## 🖼️ Screenshots
+
+### 🏠 Home Page
+A clean landing page that invites users to explore or contribute notes.
+![Home Page](./screenshots/home.png)
+
+---
+
+### 🚀 How It Works
+A step-by-step guide for users to get started.
+![How It Works](./screenshots/how-it-works.png)
+
+---
+
+### ❓ Ask & Explore Doubts
+Users can post questions, search academic doubts, and share answers.
+![Doubts Page](./screenshots/doubts.png)
+
+---
+
+### 📤 Upload Notes
+Intuitive upload form with subject tagging and file support.
+![Upload Page](./screenshots/upload.png)
+
+---
 
 ## 🚀 Getting Started
 
