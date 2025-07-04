@@ -3,7 +3,7 @@ const router = express.Router();
 const Answer = require("../models/Answer");
 const authMiddleware = require("../middleware/authMiddleware");
 
-// POST /api/answers
+
 router.post("/", authMiddleware, async (req, res) => {
   const { doubtId, content } = req.body;
 

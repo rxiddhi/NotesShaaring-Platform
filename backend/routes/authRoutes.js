@@ -12,7 +12,6 @@ const Review = require('../models/Review');
 
 const router = express.Router();
 
-// -------------------- Local Signup --------------------
 router.post('/signup', async (req, res) => {
   try {
     let { username, email, password } = req.body;
@@ -45,7 +44,7 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// -------------------- Local Login --------------------
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -71,27 +70,9 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// -------------------- Protected Routes --------------------
-router.get('/me', authMiddleware, (req, res) => {
-  res.json({ message: 'This is protected user data', user: req.user });
-});
 
-router.get('/upload', authMiddleware, (req, res) => {
-  res.json({ message: 'You are allowed to upload notes!', user: req.user });
-});
-
-// -------------------- Google OAuth --------------------
 router.get('/google-signup', passport.authenticate('google', { scope: ['profile', 'email'], state: 'signup' }));
 router.get('/google-login', passport.authenticate('google', { scope: ['profile', 'email'], state: 'login' }));
-
-router.get('/google', (req, res, next) => {
-  const state = req.query.state || 'login';
-  passport.authenticate('google', {
-    scope: ['profile', 'email'],
-    state,
-    prompt: 'select_account',
-  })(req, res, next);
-});
 
 router.get('/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
@@ -108,7 +89,16 @@ router.get('/google/callback',
   }
 );
 
-// -------------------- Dashboard Stats --------------------
+
+router.get('/me', authMiddleware, (req, res) => {
+  res.json({ message: 'This is protected user data', user: req.user });
+});
+
+router.get('/upload', authMiddleware, (req, res) => {
+  res.json({ message: 'You are allowed to upload notes!', user: req.user });
+});
+
+
 router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -166,7 +156,7 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   }
 });
 
-// -------------------- Forgot Password --------------------
+
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Email is required' });
@@ -183,16 +173,15 @@ router.post('/forgot-password', async (req, res) => {
     await user.save();
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-    const subject = 'Password Reset';
+    const subject = 'Password Reset - Notes Sharing Platform';
     const html = `
       <p>Hello ${user.username || 'user'},</p>
-      <p>You requested to reset your password.</p>
-      <p><a href="${resetLink}" style="color:blue;">Click here to reset your password</a></p>
-      <p>This link will expire in 1 hour.</p>
+      <p>You requested a password reset.</p>
+      <p><a href="${resetLink}" style="color:#6366F1; text-decoration:underline;">Click here to reset your password</a></p>
+      <p>This link is valid for 1 hour. If you did not request it, ignore this email.</p>
     `;
 
     await sendEmail({ to: user.email, subject, html });
-
     res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
   } catch (err) {
     console.error('Forgot password error:', err);
@@ -200,7 +189,7 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// -------------------- Reset Password --------------------
+
 router.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
@@ -226,5 +215,6 @@ router.post('/reset-password/:token', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 module.exports = router;

@@ -60,6 +60,52 @@ const NotesPage = () => {
     }
   }, [editModalOpen, noteToEdit]);
 
+  const uploadedNotes = notes.filter(note => {
+    if (!note.uploadedBy) return false;
+    const uploaderId = typeof note.uploadedBy === 'object' ? note.uploadedBy._id : note.uploadedBy;
+    return uploaderId === currentUserId;
+  });
+
+  const downloadedNotes = notes.filter(note => {
+    if (!Array.isArray(note.downloadedBy)) return false;
+    return note.downloadedBy.some(user =>
+      user && (typeof user === 'object' ? user._id === currentUserId : user === currentUserId)
+    );
+  });
+
+  const handleDownload = async (note) => {
+    if (!token || !currentUserId) {
+      alert("Please log in to download notes.");
+      return;
+    }
+
+    setDownloading(note._id);
+    try {
+      await axios.put(`${API_BASE_URL}/notes/${note._id}/download`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const response = await axios.get(note.fileUrl, { responseType: 'blob' });
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const cleanTitle = (note.title || "note").replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase();
+      link.href = url;
+      link.setAttribute('download', `${cleanTitle}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      fetchNotes();
+    } catch (err) {
+      alert('Download failed.');
+      console.error(err);
+    } finally {
+      setDownloading(null);
+    }
+  };
+
   const handleDelete = async (noteId) => {
     if (!window.confirm('Are you sure you want to delete this note?')) return;
     setDeleting(noteId);
@@ -75,67 +121,11 @@ const NotesPage = () => {
     }
   };
 
-  const handleDownload = async (note) => {
-    if (!token || !currentUserId) {
-      alert("Please log in to download notes.");
-      return;
-    }
-  
-    setDownloading(note._id);
-    try {
-      await axios.put(`${API_BASE_URL}/notes/${note._id}/download`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-  
-      const response = await axios.get(note.fileUrl, { responseType: 'blob' });
-      const blob = new Blob([response.data]);
-      const url = window.URL.createObjectURL(blob);
-  
-      const link = document.createElement('a');
-  
-      // Sanitize title and enforce .pdf
-      const cleanTitle = (note.title || "note")
-        .replace(/[^a-zA-Z0-9_-]/g, "_")
-        .toLowerCase();
-      const filename = `${cleanTitle}.pdf`;
-  
-      link.href = url;
-      link.setAttribute('download', filename);
-  
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-  
-      fetchNotes(); // Refresh download count
-    } catch (err) {
-      alert('Download failed.');
-      console.error(err);
-    } finally {
-      setDownloading(null);
-    }
-  };
-  
-
-  const uploadedNotes = notes.filter(note => {
-    if (!note.uploadedBy) return false;
-    const uploaderId = typeof note.uploadedBy === 'object' ? note.uploadedBy._id : note.uploadedBy;
-    return uploaderId === currentUserId;
-  });
-
-  const downloadedNotes = notes.filter(note => {
-    if (!Array.isArray(note.downloadedBy)) return false;
-    return note.downloadedBy.some(user =>
-      user && (typeof user === 'object' ? user._id === currentUserId : user === currentUserId)
-    );
-  });
-
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setEditLoading(true);
     setEditError("");
     try {
-      const token = localStorage.getItem("token");
       let data;
       let headers;
       if (editFile) {
@@ -146,13 +136,10 @@ const NotesPage = () => {
         data.append("file", editFile);
         headers = { Authorization: `Bearer ${token}` };
       } else {
-        data = {
-          title: editTitle,
-          subject: editSubject,
-          description: editDescription,
-        };
+        data = { title: editTitle, subject: editSubject, description: editDescription };
         headers = { Authorization: `Bearer ${token}` };
       }
+
       await axios.patch(`${API_BASE_URL}/notes/${noteToEdit._id}`, data, {
         headers: editFile ? { ...headers, "Content-Type": "multipart/form-data" } : headers,
       });
@@ -167,22 +154,22 @@ const NotesPage = () => {
   };
 
   const renderNoteCard = (note) => {
-    const fileExt = note.fileUrl.split('.').pop().split('?')[0].toUpperCase();
+    const fileExt = note.fileUrl?.split('.').pop().split('?')[0].toUpperCase();
     const isUploader = currentUserId && (note.uploadedBy && (note.uploadedBy._id === currentUserId || note.uploadedBy === currentUserId));
+
     return (
-      <div key={note._id} className="bg-white rounded-xl shadow p-4 border">
-        <h3 className="font-bold text-lg">{note.title}</h3>
-        <p className="text-sm text-gray-600">{note.subject}</p>
-        {note.description && <p className="mt-1 text-gray-700">{note.description}</p>}
-        <p className="text-xs text-gray-500 mt-1">File Type: {fileExt}</p>
-        <p className="text-xs text-gray-500">Downloads: {note.downloadCount}</p>
-        <p className="text-xs text-gray-500 mt-1">
-          Uploaded by: {note.uploadedBy?.username || note.uploadedBy?.email || 'Anonymous'}
-        </p>
-        <div className="flex gap-2 mt-3">
+      <div key={note._id} className="bg-white p-5 rounded-xl shadow border flex flex-col justify-between">
+        <div>
+          <h3 className="text-lg font-bold text-gray-800">{note.title}</h3>
+          <p className="text-sm text-gray-600">{note.subject}</p>
+          {note.description && <p className="text-gray-700 mt-1">{note.description}</p>}
+          <p className="text-xs text-gray-500 mt-2">File: {fileExt} | Downloads: {note.downloadCount}</p>
+          <p className="text-xs text-gray-500">By: {note.uploadedBy?.username || note.uploadedBy?.email || 'Anonymous'}</p>
+        </div>
+        <div className="flex gap-2 mt-4 flex-wrap">
           <button
             onClick={() => handleDownload(note)}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
             disabled={downloading === note._id}
           >
             {downloading === note._id ? 'Downloading...' : 'Download'}
@@ -191,58 +178,55 @@ const NotesPage = () => {
             <>
               <button
                 onClick={() => handleDelete(note._id)}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
                 disabled={deleting === note._id}
               >
                 {deleting === note._id ? 'Deleting...' : 'Delete'}
               </button>
               <button
                 onClick={() => { setNoteToEdit(note); setEditModalOpen(true); }}
-                className="px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-sm font-semibold shadow transition"
+                className="px-3 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
               >
                 Edit
               </button>
             </>
           )}
+          <button
+            onClick={() => { setSelectedNoteId(note._id); setModalOpen(true); }}
+            className="px-3 py-1 text-sm bg-purple-500 text-white rounded hover:bg-purple-600"
+          >
+            Add/View Reviews
+          </button>
         </div>
-        <button
-          onClick={() => {
-            setSelectedNoteId(note._id);
-            setModalOpen(true);
-          }}
-          className="mt-3 w-full py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl shadow-md hover:from-purple-600 hover:to-blue-600 font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-        >
-          Add/View Reviews
-        </button>
       </div>
     );
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">📚 My Notes Dashboard</h2>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-6">
+      <h2 className="text-3xl font-bold mb-8 text-gray-800 text-center">📚 My Notes Dashboard</h2>
 
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-center text-lg text-gray-600">Loading notes...</p>
       ) : (
         <>
-          <section className="mb-10">
-            <h3 className="text-xl font-semibold mb-2 text-green-700">🟢 My Uploaded Notes</h3>
+          <section className="mb-12">
+            <h3 className="text-2xl font-semibold mb-4 text-green-800">🟢 Uploaded Notes</h3>
             {uploadedNotes.length === 0 ? (
-              <p className="text-gray-500">You haven't uploaded any notes yet.</p>
+              <p className="text-gray-600">You haven’t uploaded any notes yet.</p>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
                 {uploadedNotes.map(renderNoteCard)}
               </div>
             )}
           </section>
 
           <section>
-            <h3 className="text-xl font-semibold mb-2 text-blue-700">🔵 My Downloaded Notes</h3>
+            <h3 className="text-2xl font-semibold mb-4 text-blue-800">🔵 Downloaded Notes</h3>
             {downloadedNotes.length === 0 ? (
-              <p className="text-gray-500">You haven't downloaded any notes yet.</p>
+              <p className="text-gray-600">You haven’t downloaded any notes yet.</p>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
                 {downloadedNotes.map(renderNoteCard)}
               </div>
             )}
@@ -250,80 +234,28 @@ const NotesPage = () => {
         </>
       )}
 
-  
+     
       {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm" style={{ background: 'rgba(255,255,255,0.3)' }}>
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
-            <button
-              onClick={() => setModalOpen(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
-            >
-              &times;
-            </button>
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-lg w-full relative">
+            <button onClick={() => setModalOpen(false)} className="absolute top-2 right-4 text-xl text-gray-600 hover:text-red-500">&times;</button>
             <ReviewList noteId={selectedNoteId} currentUserId={currentUserId} />
           </div>
         </div>
       )}
 
       {editModalOpen && noteToEdit && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm" style={{ background: 'rgba(255,255,255,0.3)' }}>
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
-            <button
-              onClick={() => setEditModalOpen(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
-            >
-              &times;
-            </button>
-            <h2 className="text-xl font-bold mb-4">Edit Note</h2>
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-lg w-full relative">
+            <button onClick={() => setEditModalOpen(false)} className="absolute top-2 right-4 text-xl text-gray-600 hover:text-red-500">&times;</button>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Edit Note</h2>
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={editTitle}
-                  onChange={e => setEditTitle(e.target.value)}
-                  required
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                <input
-                  type="text"
-                  value={editSubject}
-                  onChange={e => setEditSubject(e.target.value)}
-                  required
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea
-                  value={editDescription}
-                  onChange={e => setEditDescription(e.target.value)}
-                  required
-                  rows={4}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Replace PDF (optional)</label>
-                <input
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={e => setEditFile(e.target.files[0])}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-                <div className="text-xs text-gray-400 mt-1">
-                  Current File Type: {noteToEdit.fileUrl ? noteToEdit.fileUrl.split('.').pop().split('?')[0].toUpperCase() : 'N/A'}
-                </div>
-              </div>
-              {editError && <div className="text-red-500 text-sm">{editError}</div>}
-              <button
-                type="submit"
-                className="w-full py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-xl font-semibold shadow hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 disabled:opacity-60"
-                disabled={editLoading}
-              >
+              <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Title" required className="w-full p-2 border rounded" />
+              <input type="text" value={editSubject} onChange={e => setEditSubject(e.target.value)} placeholder="Subject" required className="w-full p-2 border rounded" />
+              <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={4} placeholder="Description" required className="w-full p-2 border rounded" />
+              <input type="file" accept=".pdf,.doc,.docx" onChange={e => setEditFile(e.target.files[0])} className="w-full" />
+              {editError && <p className="text-red-500 text-sm">{editError}</p>}
+              <button type="submit" disabled={editLoading} className="w-full py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
                 {editLoading ? "Saving..." : "Save Changes"}
               </button>
             </form>

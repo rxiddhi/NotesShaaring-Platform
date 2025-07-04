@@ -4,7 +4,7 @@ const Doubt = require("../models/Doubt");
 const User = require("../models/User");
 const authMiddleware = require("../middlewares/authMiddleware");
 
-// Get all doubts
+
 router.get("/", async (req, res) => {
   try {
     const doubts = await Doubt.find()
@@ -16,7 +16,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get a single doubt by ID (with answers)
 router.get("/:id", async (req, res) => {
   try {
     const doubt = await Doubt.findById(req.params.id)
@@ -29,7 +28,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Post a new doubt
 router.post("/", authMiddleware, async (req, res) => {
   const { title, description, subject } = req.body;
 
@@ -54,7 +52,6 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-// Post an answer to a doubt
 router.post("/:id/answers", authMiddleware, async (req, res) => {
   const { text } = req.body;
   if (!text)
@@ -69,7 +66,6 @@ router.post("/:id/answers", authMiddleware, async (req, res) => {
     };
     doubt.answers.push(answer);
     await doubt.save();
-    // Populate the author field for the new answer
     await doubt.populate("answers.author", "username name email");
     const newAnswer = doubt.answers[doubt.answers.length - 1];
     res.status(201).json({ answer: newAnswer });
@@ -78,7 +74,6 @@ router.post("/:id/answers", authMiddleware, async (req, res) => {
   }
 });
 
-// Edit a doubt
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const doubt = await Doubt.findById(req.params.id);
@@ -98,7 +93,6 @@ router.put("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// Delete a doubt
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const doubt = await Doubt.findById(req.params.id);
@@ -113,7 +107,6 @@ router.delete("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// Edit an answer
 router.put("/:doubtId/answers/:answerId", authMiddleware, async (req, res) => {
   try {
     const doubt = await Doubt.findById(req.params.doubtId).populate(
@@ -123,7 +116,6 @@ router.put("/:doubtId/answers/:answerId", authMiddleware, async (req, res) => {
     if (!doubt) return res.status(404).json({ message: "Doubt not found" });
     const answer = doubt.answers.id(req.params.answerId);
     if (!answer) return res.status(404).json({ message: "Answer not found" });
-    // Fix: handle both populated and unpopulated author fields
     const authorId = answer.author._id
       ? answer.author._id.toString()
       : answer.author.toString();
@@ -134,7 +126,6 @@ router.put("/:doubtId/answers/:answerId", authMiddleware, async (req, res) => {
     answer.time = new Date();
     answer.updatedAt = new Date();
     await doubt.save();
-    // Re-populate the author field for the updated answer
     await doubt.populate("answers.author", "username name email");
     const updatedAnswer = doubt.answers.id(req.params.answerId);
     res.json({ message: "Answer updated", answer: updatedAnswer });
@@ -144,7 +135,6 @@ router.put("/:doubtId/answers/:answerId", authMiddleware, async (req, res) => {
   }
 });
 
-// Delete an answer
 router.delete(
   "/:doubtId/answers/:answerId",
   authMiddleware,

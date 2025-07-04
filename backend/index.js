@@ -9,9 +9,11 @@ const initGooglePassport = require("./config/passport");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:5173",
   "https://notes-sharingplatform.vercel.app",
+  "https://notenest-lzm0.onrender.com", 
 ];
 
 const corsOptions = {
@@ -29,22 +31,21 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 initGooglePassport();
 app.use(passport.initialize());
 
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api", require("./routes/authRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/notes", require("./routes/noteRoutes"));
-app.use("/api/notes", require("./routes/reviewRoutes"));
+app.use("/api/reviews", require("./routes/reviewRoutes"));
 app.use("/api/doubts", require("./routes/doubtRoutes"));
+app.use("/api/users", require("./routes/userRoutes")); 
 
-// ✅ Health Check Routes
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Notes Sharing Platform API" });
 });
+
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });

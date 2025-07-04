@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const noteSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -36,29 +37,30 @@ const noteSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     }
+  ],
+  likedBy: [ 
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
   ]
 }, {
   timestamps: true
 });
+
+
 noteSchema.index({
   title: 'text',
   subject: 'text',
   description: 'text'
 });
+
+
+noteSchema.virtual('likes').get(function () {
+  return this.likedBy.length;
+});
+
+noteSchema.set('toJSON', { virtuals: true });
+noteSchema.set('toObject', { virtuals: true });
+
 module.exports = mongoose.model('Note', noteSchema);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

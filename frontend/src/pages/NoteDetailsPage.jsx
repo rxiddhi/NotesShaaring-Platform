@@ -15,7 +15,7 @@ const NoteDetailsPage = () => {
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      currentUserId = decoded.userId || decoded.id || decoded.sub; // fallback
+      currentUserId = decoded.userId || decoded.id || decoded.sub;
     } catch {
       currentUserId = null;
     }
@@ -48,7 +48,6 @@ const NoteDetailsPage = () => {
         Uploaded by: {note.uploadedBy?.username || note.uploadedBy?.email || 'Anonymous'}
       </p>
 
-      {/* ⭐ Reviews Section */}
       <ReviewList noteId={noteId} currentUserId={currentUserId} />
     </div>
   );
