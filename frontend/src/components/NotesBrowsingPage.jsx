@@ -9,6 +9,10 @@ import {
   FaFilePdf,
 } from "react-icons/fa";
 
+const API_BASE_URL = import.meta.env.MODE === "production"
+  ? "https://notenest-lzm0.onrender.com/api"
+  : "http://localhost:3000/api";
+
 const NotesBrowsingPage = () => {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +37,7 @@ const NotesBrowsingPage = () => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/notes");
+        const res = await fetch(`${API_BASE_URL}/notes`);
         if (!res.ok) throw new Error("Failed to fetch notes");
 
         const data = await res.json();
@@ -78,7 +82,7 @@ const NotesBrowsingPage = () => {
   const trackDownload = async (noteId) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`http://localhost:3000/api/notes/${noteId}/download`, {
+      await fetch(`${API_BASE_URL}/notes/${noteId}/download`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

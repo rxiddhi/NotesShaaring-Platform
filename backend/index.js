@@ -11,15 +11,13 @@ const PORT = process.env.PORT || 3000;
 
 // Allow requests from your frontend domain(s)
 const allowedOrigins = [
-  "http://localhost:5173", // local dev
-  "https://notes-sharingplatform.vercel.app", 
+  "https://notes-sharingplatform.vercel.app",
+  "http://localhost:5173"
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));

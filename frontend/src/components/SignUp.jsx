@@ -85,7 +85,7 @@ function SignUp() {
         {/* ✅ Google Signup Button */}
         <button
           onClick={() => {
-            window.location.href = `${import.meta.env.VITE_GOOGLE_AUTH_URL}?state=signup`;
+            window.location.href = "https://notenest-lzm0.onrender.com/api/auth/google";
           }}
           className="w-full flex items-center justify-center gap-2 py-3 mt-2 text-gray-700 font-semibold rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition duration-300"
         >

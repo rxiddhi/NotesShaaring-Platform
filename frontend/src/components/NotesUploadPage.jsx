@@ -1,6 +1,10 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.MODE === "production"
+  ? "https://notenest-lzm0.onrender.com/api"
+  : "http://localhost:3000/api";
+
 export default function NotesUploadPage() {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
@@ -34,7 +38,7 @@ export default function NotesUploadPage() {
         return;
       }
 
-      await axios.post("http://localhost:3000/api/notes", formData, {
+      await axios.post(`${API_BASE_URL}/notes`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
