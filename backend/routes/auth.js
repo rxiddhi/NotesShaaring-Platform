@@ -89,7 +89,12 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+  passport.authenticate('google', {
+    session: false,
+    failureRedirect: process.env.FRONTEND_URL
+      ? `${process.env.FRONTEND_URL}/login`
+      : 'http://localhost:5173/login'
+  }),
   async (req, res) => {
     const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const token = jwt.sign(
