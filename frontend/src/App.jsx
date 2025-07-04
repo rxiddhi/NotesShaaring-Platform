@@ -13,65 +13,46 @@ import PrivateRoute from './components/PrivateRoute';
 import NoteDetailsPage from './pages/NoteDetailsPage';
 import PublicRoute from './components/PublicRoute';
 import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './pages/ResetPassword'; 
 
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
-      <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-          <Route 
+  
+        <Route 
           path="/dashboard" 
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><Dashboard /></PrivateRoute>} 
         />
         <Route 
           path="/notes" 
-          element={
-            <PrivateRoute>
-              <NotesPage />
-            </PrivateRoute>
-          } 
+          element={<PrivateRoute><NotesPage /></PrivateRoute>} 
         />
         <Route 
           path="/notes/:id" 
-          element={
-            <PrivateRoute>
-              <NoteDetailsPage />
-            </PrivateRoute>
-          } 
-        /> 
+          element={<PrivateRoute><NoteDetailsPage /></PrivateRoute>} 
+        />
         <Route 
           path="/upload" 
-          element={
-            <PrivateRoute>
-              <NotesUploadPage />
-            </PrivateRoute>
-          } 
+          element={<PrivateRoute><NotesUploadPage /></PrivateRoute>} 
         />
         <Route 
           path="/browse" 
-          element={
-            <PrivateRoute>
-              <NotesBrowsingPage />
-            </PrivateRoute>
-          } 
+          element={<PrivateRoute><NotesBrowsingPage /></PrivateRoute>} 
         />
-          <Route 
-            path="/doubts" 
-            element={
-              <PrivateRoute>
-                <DoubtsPage />
-              </PrivateRoute>
-            } 
-          />
+        <Route 
+          path="/doubts" 
+          element={<PrivateRoute><DoubtsPage /></PrivateRoute>} 
+        />
+
+ 
         <Route path="/auth/success" element={<AuthSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} /> 
       </Routes>
     </Router>
   );

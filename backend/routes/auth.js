@@ -2,14 +2,18 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const Note = require('../models/Note');
 const Review = require('../models/Review');
 const authMiddleware = require('../middlewares/authMiddleware');
+const sendEmail = require('../utils/sendEmail');
+
 
 const router = express.Router();
 
-// Signup Route
+
 router.post('/signup', async (req, res) => {
   try {
     let { username, email, password } = req.body;
@@ -81,7 +85,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Google Auth Routes
+
 router.get('/google-signup',
   passport.authenticate('google', { scope: ['profile', 'email'], state: 'signup' })
 );
@@ -114,35 +118,31 @@ router.get('/google/callback',
   }
 );
 
-// Dashboard stats endpoint
+
 router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Dates for this month
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
     const endOfMonth = new Date(startOfMonth);
     endOfMonth.setMonth(endOfMonth.getMonth() + 1);
 
-    // Uploaded notes
     const uploadedNotes = await Note.countDocuments({ uploadedBy: userId });
     const uploadedThisMonth = await Note.countDocuments({
       uploadedBy: userId,
       createdAt: { $gte: startOfMonth, $lt: endOfMonth }
     });
 
-    // Downloaded notes
     const downloadedNotes = await Note.countDocuments({ downloadedBy: userId });
     const downloadedThisMonth = await Note.countDocuments({
       downloadedBy: userId,
       createdAt: { $gte: startOfMonth, $lt: endOfMonth }
     });
 
-    // Reviews received (for notes uploaded by user)
     const userNotes = await Note.find({ uploadedBy: userId }).select('_id');
     const userNoteIds = userNotes.map(n => n._id);
     const reviewsReceived = await Review.countDocuments({ note: { $in: userNoteIds } });
@@ -150,6 +150,7 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
       note: { $in: userNoteIds },
       createdAt: { $gte: startOfMonth, $lt: endOfMonth }
     });
+
     const allReviews = await Review.find({ note: { $in: userNoteIds } });
     const averageRating = allReviews.length > 0 ?
       (allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / allReviews.length).toFixed(2) : 0;
@@ -175,24 +176,53 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   }
 });
 
-// Forgot Password Endpoint
+
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ message: 'Email is required' });
-  }
+  if (!email) return res.status(400).json({ message: 'Email is required' });
+
   try {
     const user = await User.findOne({ email: email.trim().toLowerCase() });
     if (!user) {
-      // For security, do not reveal if the email is not registered
       return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
     }
-    // Here you would generate a token and send an email
-    // For now, just simulate success
-    return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = Date.now() + 3600000; // 1 hour
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = expires;
+    await user.save();
+
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${token}`;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      to: user.email,
+      from: process.env.EMAIL_USER,
+      subject: 'Reset Your Password - Notes Sharing Platform',
+      html: `
+        <p>Hi ${user.username || 'User'},</p>
+        <p>You requested a password reset. Click the button below to reset your password:</p>
+        <a href="${resetUrl}" style="padding:10px 15px; background-color:#6366F1; color:white; text-decoration:none; border-radius:5px;">Reset Password</a>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you did not request this, you can ignore this email.</p>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
   } catch (err) {
     console.error('Forgot password error:', err);
-    return res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

@@ -1,3 +1,5 @@
+
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -9,16 +11,16 @@ const initGooglePassport = require("./config/passport");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 app.use(cors(corsOptions));
-app.use(express.json());
 
+
+app.use(express.json());
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -27,12 +29,12 @@ initGooglePassport();
 app.use(passport.initialize());
 
 
-app.use("/api/auth", require("./routes/auth"));
+app.use("/api/auth", require("./routes/auth")); 
 app.use("/api", require("./routes/authRoutes")); 
-app.use("/api/notes", require("./routes/noteRoutes")); 
-app.use("/api/notes", require("./routes/reviewRoutes")); 
+app.use("/api/notes", require("./routes/noteRoutes"));
+app.use("/api/reviews", require("./routes/reviewRoutes"));
 
-
+// ✅ Health check
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Notes Sharing Platform API" });
 });
@@ -40,7 +42,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-
+// ✅ Connect to DB and start server
 connectDB()
   .then(() => {
     app.listen(PORT, () => {

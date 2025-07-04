@@ -15,7 +15,8 @@ export default function ForgotPassword() {
     try {
       await axios.post('http://localhost:3000/api/auth/forgot-password', { email });
       setMessage('If an account with that email exists, a password reset link has been sent.');
-    } catch (err) {
+    } catch (error) {
+      console.error('Forgot Password Error:', error);
       setError('Failed to send reset email. Please try again.');
     }
     setLoading(false);
@@ -51,4 +52,4 @@ export default function ForgotPassword() {
       </div>
     </div>
   );
-} 
+}

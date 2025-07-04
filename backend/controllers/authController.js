@@ -1,31 +1,50 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const User = require("../models/userModel");
+const { Resend } = require("resend");
 
-const protect = (req, res, next) => {
-  let token;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
+// Generate Reset Token (valid for 15 minutes)
+const generateResetToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
+};
 
-    
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+// Forgot Password Controller
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
 
-    
-      req.user = decoded.user;
-      next();
-    } catch (err) {
-      console.error("Auth error:", err);
-      if (err.name === "TokenExpiredError") {
-        return res.status(401).json({ message: "jwt expired" });
-      }
-      return res.status(401).json({ message: "Invalid token" });
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found with this email" });
     }
-  } else {
-    return res.status(401).json({ message: "No token provided" });
+
+    const resetToken = generateResetToken(user._id);
+    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+
+    const emailResponse = await resend.emails.send({
+      from: "WisdomChain <your_verified_email@yourdomain.com>", // Must be a verified sender in Resend
+      to: email,
+      subject: "Reset Your Password",
+      html: `
+        <h2>Hello ${user.name || "there"},</h2>
+        <p>You requested a password reset. Click the link below to reset your password:</p>
+        <a href="${resetLink}">Reset Password</a>
+        <p>This link will expire in 15 minutes.</p>
+        <p>If you didn't request this, you can ignore this email.</p>
+      `,
+    });
+
+    console.log("Resend email sent:", emailResponse);
+    res.status(200).json({ message: "Reset link sent to your email." });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: "Something went wrong while sending email" });
   }
 };
 
-module.exports = protect;
+// Export your controller(s)
+module.exports = {
+  forgotPassword,
+};
