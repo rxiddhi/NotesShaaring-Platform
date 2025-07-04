@@ -23,7 +23,6 @@ function SignUp() {
         `${import.meta.env.VITE_API_BASE_URL}/api/users/signup`,
         formData
       );
-      
       toast.success("Signup successful!");
       navigate("/login");
     } catch (error) {
@@ -36,6 +35,7 @@ function SignUp() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6">Create an Account</h2>
+
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Username</label>
@@ -82,11 +82,10 @@ function SignUp() {
           <span className="text-sm text-gray-500">Or</span>
         </div>
 
-        {/* ✅ Google Signup */}
+        {/* ✅ Google Signup Button */}
         <button
           onClick={() => {
-            window.location.href =
-              import.meta.env.VITE_GOOGLE_AUTH_URL + "-signup";
+            window.location.href = `${import.meta.env.VITE_GOOGLE_AUTH_URL}?state=signup`;
           }}
           className="w-full flex items-center justify-center gap-2 py-3 mt-2 text-gray-700 font-semibold rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition duration-300"
         >
