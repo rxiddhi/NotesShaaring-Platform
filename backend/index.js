@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const helmet = require("helmet");
 require("dotenv").config();
 const passport = require("passport");
 const connectDB = require("./config/db");
@@ -9,11 +10,10 @@ const initGooglePassport = require("./config/passport");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:5173",
   "https://notes-sharingplatform.vercel.app",
-  "https://notenest-lzm0.onrender.com", 
+  "https://notenest-lzm0.onrender.com",
 ];
 
 const corsOptions = {
@@ -21,6 +21,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn("❌ Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -29,29 +30,41 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-initGooglePassport();
-app.use(passport.initialize());
-
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/notes", require("./routes/noteRoutes"));
-app.use("/api/reviews", require("./routes/reviewRoutes"));
-app.use("/api/doubts", require("./routes/doubtRoutes"));
-app.use("/api/users", require("./routes/userRoutes")); 
-
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to Notes Sharing Platform API" });
-});
-
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
-
 connectDB()
   .then(() => {
+    app.use(cors(corsOptions));
+    app.use(helmet());
+    app.use(express.json({ limit: "10mb" }));
+    app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+    app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+    initGooglePassport();
+    app.use(passport.initialize());
+
+    app.use("/api/auth", require("./routes/authRoutes"));
+    app.use("/api/notes", require("./routes/noteRoutes"));
+    app.use("/api/reviews", require("./routes/reviewRoutes"));
+    app.use("/api/doubts", require("./routes/doubtRoutes"));
+    app.use("/api/users", require("./routes/userRoutes"));
+
+    app.get("/", (req, res) => {
+      res.json({
+        message: "Welcome to Notes Sharing Platform API",
+        version: "v1.0.0",
+        status: "OK",
+        frontend: process.env.FRONTEND_URL || "http://localhost:5173",
+      });
+    });
+
+    app.get("/health", (req, res) => {
+      res.json({ status: "ok" });
+    });
+
+    app.use((err, req, res, next) => {
+      console.error("🔥 Server Error:", err.stack);
+      res.status(500).json({ message: "Internal Server Error" });
+    });
+
     app.listen(PORT, () => {
       console.log("✅ MongoDB connected");
       console.log(`🚀 Server is running on http://localhost:${PORT}`);

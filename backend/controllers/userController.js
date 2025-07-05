@@ -1,54 +1,59 @@
 const User = require("../models/User");
-const Note = require("../models/Note");
-const Review = require("../models/Review");
 
-exports.getDashboardStats = async (req, res) => {
+exports.updateProfile = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const uploadedNotes = await Note.countDocuments({ uploadedBy: userId });
-    const downloadedNotes = await Note.countDocuments({ downloadedBy: userId });
-    const reviewsReceived = await Review.countDocuments({
-      note: { $in: await Note.find({ uploadedBy: userId }).distinct("_id") },
-    });
-
-    const stats = {
-      uploadedNotes,
-      downloadedNotes,
-      reviewsReceived,
-      uploadedThisMonth: 0,
-      downloadedThisMonth: 0,
-      reviewsThisMonth: 0,
-      averageRating: 0,
-    };
-
-    res.status(200).json({ user, stats });
-  } catch (err) {
-    console.error("Error in getDashboardStats:", err);
-    res.status(500).json({ message: "Server error while fetching dashboard stats" });
-  }
-};
-
-exports.updateProfile = async (req, res) => {
-  try {
     const { bio } = req.body;
-    const user = await User.findById(req.user.userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    if (bio) user.bio = bio;
-    if (req.file) user.imageUrl = req.file.path;
+    if (bio !== undefined) user.bio = bio;
+    if (req.file) user.imageUrl = req.file.path || req.file.secure_url;
 
     await user.save();
 
     res.status(200).json({
       message: "Profile updated",
       imageUrl: user.imageUrl,
+      bio: user.bio,
     });
   } catch (err) {
-    console.error("Update profile error:", err);
+    console.error("Update profile error:", err.message);
     res.status(500).json({ message: "Server error while updating profile" });
+  }
+};
+
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const user = await User.findById(userId);
+
+    const stats = {
+      uploadedNotes: 0,
+      downloadedNotes: 0,
+      reviewsReceived: 0,
+      uploadedThisMonth: 0,
+      downloadedThisMonth: 0,
+      reviewsThisMonth: 0,
+      averageRating: 0,
+    };
+
+    res.status(200).json({
+      user: {
+        username: user.username || user.name || "User",
+        name: user.name,
+        joinDate: user.createdAt,
+        bio: user.bio || "",
+        imageUrl: user.imageUrl || "",
+      },
+      stats,
+    });
+  } catch (err) {
+    console.error("Dashboard stats error:", err.message);
+    res.status(500).json({ message: "Server error while loading dashboard" });
   }
 };
