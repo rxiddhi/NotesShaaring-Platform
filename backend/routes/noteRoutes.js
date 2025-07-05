@@ -7,7 +7,7 @@ const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
 
-// Upload a new note
+
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
     const { title, subject, description } = req.body;
@@ -23,6 +23,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
       uploadedBy: req.user.userId,
       downloadedBy: [],
       downloadCount: 0,
+      likedBy: [], 
     });
 
     await newNote.save();
@@ -37,7 +38,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
   }
 });
 
-// Get all notes with review count
+
 router.get("/", async (req, res) => {
   try {
     const notes = await Note.find()
@@ -45,28 +46,29 @@ router.get("/", async (req, res) => {
       .populate("uploadedBy", "username email");
 
     const reviewCounts = await Review.aggregate([
-      { $group: { _id: "$note", count: { $sum: 1 } } }
+      { $group: { _id: "$note", count: { $sum: 1 } } },
     ]);
 
     const reviewCountMap = {};
-    reviewCounts.forEach(rc => {
+    reviewCounts.forEach((rc) => {
       reviewCountMap[rc._id.toString()] = rc.count;
     });
 
-    const notesWithReviewCount = notes.map(note => {
+    const notesWithExtras = notes.map((note) => {
       const n = note.toObject();
       n.reviewCount = reviewCountMap[n._id.toString()] || 0;
+      n.likes = note.likedBy?.length || 0;
       return n;
     });
 
-    res.status(200).json({ notes: notesWithReviewCount });
+    res.status(200).json({ notes: notesWithExtras });
   } catch (err) {
     console.error("Fetch notes error:", err);
     res.status(500).json({ message: "Failed to fetch notes" });
   }
 });
 
-// Get a single note
+
 router.get("/:id", async (req, res) => {
   try {
     const note = await Note.findById(req.params.id).populate("uploadedBy", "username email");
@@ -78,7 +80,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Track downloads
+
 router.put("/:id/download", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -99,7 +101,35 @@ router.put("/:id/download", protect, async (req, res) => {
   }
 });
 
-// Delete a note
+
+router.put("/:id/like", protect, async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: "Note not found" });
+
+    const userId = req.user.userId;
+    const alreadyLiked = note.likedBy.includes(userId);
+
+    if (alreadyLiked) {
+      note.likedBy = note.likedBy.filter((id) => id.toString() !== userId);
+    } else {
+      note.likedBy.push(userId);
+    }
+
+    await note.save();
+
+    res.status(200).json({
+      message: alreadyLiked ? "Unliked" : "Liked",
+      likedBy: note.likedBy,
+      likeCount: note.likedBy.length,
+    });
+  } catch (err) {
+    console.error("Like toggle error:", err);
+    res.status(500).json({ message: "Server error while liking note" });
+  }
+});
+
+
 router.delete("/:id", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -117,7 +147,7 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
-// Update a note
+
 router.patch("/:id", protect, upload.single("file"), async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -140,7 +170,7 @@ router.patch("/:id", protect, upload.single("file"), async (req, res) => {
   }
 });
 
-// Download actual file
+
 router.get("/:id/download-file", async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -148,12 +178,10 @@ router.get("/:id/download-file", async (req, res) => {
 
     const filePath = note.fileUrl;
 
-    // If file is stored on Cloudinary (http/https link), redirect
     if (filePath.startsWith("http")) {
       return res.redirect(filePath);
     }
 
-    // If file is stored locally
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ message: "File not found" });
     }

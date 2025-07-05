@@ -25,7 +25,6 @@ export default function DoubtsPage() {
     const [editSubject, setEditSubject] = useState(SUBJECTS[0]);
     const navigate = useNavigate();
 
-    // Get current userId from token
     let currentUserId = null;
     const token = localStorage.getItem('token');
     if (token) {

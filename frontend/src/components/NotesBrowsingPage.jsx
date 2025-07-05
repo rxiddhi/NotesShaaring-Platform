@@ -6,7 +6,6 @@ import {
   FaCalendarAlt,
   FaUser,
   FaBookOpen,
-  FaFilePdf,
 } from "react-icons/fa";
 
 const API_BASE_URL = import.meta.env.MODE === "production"
@@ -22,17 +21,14 @@ const NotesBrowsingPage = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [likedNotes, setLikedNotes] = useState([]);
 
-
   useEffect(() => {
     const stored = localStorage.getItem("likedNotes");
     if (stored) setLikedNotes(JSON.parse(stored));
   }, []);
 
-
   useEffect(() => {
     localStorage.setItem("likedNotes", JSON.stringify(likedNotes));
   }, [likedNotes]);
-
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -48,7 +44,7 @@ const NotesBrowsingPage = () => {
 
         setNotes(enriched);
       } catch (err) {
-        setError(err.message); 
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -56,7 +52,6 @@ const NotesBrowsingPage = () => {
 
     fetchNotes();
   }, []);
-
 
   const handleLikeToggle = (noteId) => {
     const updatedNotes = notes.map((note) => {
@@ -77,7 +72,6 @@ const NotesBrowsingPage = () => {
         : [...prev, noteId]
     );
   };
-
 
   const trackDownload = async (noteId) => {
     try {
@@ -137,20 +131,18 @@ const NotesBrowsingPage = () => {
       }
     });
 
-
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
+      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
         <div className="animate-spin h-12 w-12 border-4 border-purple-500 border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
-
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="bg-red-100 text-red-600 p-6 rounded-lg shadow">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-red-50">
+        <div className="bg-red-100 text-red-700 p-6 rounded-lg shadow">
           <h2 className="font-bold mb-2">Failed to load notes</h2>
           <p>{error}</p>
           <button
@@ -164,27 +156,26 @@ const NotesBrowsingPage = () => {
     );
   }
 
-
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-br from-slate-100 to-pink-100">
-      <h1 className="text-3xl font-bold mb-4 text-purple-700">Browse Notes</h1>
+    <div className="min-h-screen p-6 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
+      <h1 className="text-3xl font-bold mb-6 text-purple-800 text-center">📚 Browse Shared Notes</h1>
 
-      <div className="flex flex-wrap gap-3 items-center mb-6 bg-white p-4 rounded-xl shadow-sm">
-        <div className="flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-md flex-1">
-          <FaSearch className="text-slate-400" />
+      <div className="flex flex-wrap gap-3 items-center mb-6 bg-white p-4 rounded-xl shadow-md">
+        <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md flex-1">
+          <FaSearch className="text-gray-400" />
           <input
             type="text"
             placeholder="Search notes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 bg-transparent outline-none"
+            className="flex-1 bg-transparent outline-none text-sm"
           />
         </div>
 
         <select
           value={selectedSubject}
           onChange={(e) => setSelectedSubject(e.target.value)}
-          className="p-2 border border-gray-300 rounded"
+          className="p-2 border border-gray-300 rounded-md text-sm"
         >
           {subjects.map((s) => (
             <option key={s} value={s}>
@@ -196,7 +187,7 @@ const NotesBrowsingPage = () => {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="p-2 border border-gray-300 rounded"
+          className="p-2 border border-gray-300 rounded-md text-sm"
         >
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
@@ -206,17 +197,17 @@ const NotesBrowsingPage = () => {
         </select>
       </div>
 
-      <p className="mb-4 text-slate-600">
-        Showing {filteredNotes.length} {filteredNotes.length === 1 ? "note" : "notes"}
+      <p className="mb-4 text-gray-600 text-sm">
+        Showing <b>{filteredNotes.length}</b> {filteredNotes.length === 1 ? "note" : "notes"}
       </p>
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {filteredNotes.map((note) => (
           <div
             key={note._id}
-            className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition"
+            className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition duration-200"
           >
-            <div className="flex justify-between text-sm mb-2 text-slate-500">
+            <div className="flex justify-between text-sm mb-2 text-gray-500">
               <span className="flex items-center gap-1 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
                 <FaBookOpen /> {note.subject || "Unknown"}
               </span>
@@ -224,14 +215,14 @@ const NotesBrowsingPage = () => {
             </div>
 
             <h3 className="text-lg font-semibold text-gray-800 mb-1">{note.title}</h3>
-            <p className="text-sm text-slate-600 flex items-center gap-1">
+            <p className="text-sm text-gray-600 flex items-center gap-1">
               <FaUser /> {note.uploadedBy?.username || "Anonymous"}
             </p>
-            <p className="text-sm text-slate-600 flex items-center gap-1 mb-2">
+            <p className="text-sm text-gray-600 flex items-center gap-1 mb-2">
               <FaCalendarAlt /> {formatDate(note.createdAt)}
             </p>
 
-            <div className="text-xs text-slate-400 flex justify-between mt-3">
+            <div className="text-xs text-gray-400 flex justify-between mt-3">
               <span>{note.downloadCount || 0} downloads</span>
               <span>PDF</span>
               <span>{note.reviewCount || 0} reviews</span>
@@ -240,7 +231,7 @@ const NotesBrowsingPage = () => {
             <div className="mt-4 flex justify-between items-center gap-2">
               <button
                 onClick={() => window.open(note.fileUrl, "_blank")}
-                className="flex-1 flex items-center justify-center gap-2 py-2 text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50"
+                className="flex-1 flex items-center justify-center gap-2 py-2 text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 text-sm"
               >
                 <FaEye /> View
               </button>
@@ -249,7 +240,6 @@ const NotesBrowsingPage = () => {
                 onClick={async () => {
                   try {
                     await trackDownload(note._id);
-
                     const response = await fetch(note.fileUrl);
                     if (!response.ok) throw new Error("Download failed");
 
@@ -257,7 +247,6 @@ const NotesBrowsingPage = () => {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement("a");
 
-                    // ✅ Get extension correctly
                     const urlPath = new URL(note.fileUrl).pathname;
                     const fileExtMatch = urlPath.match(/\.(\w+)(?:\?|$)/);
                     const fileExt = fileExtMatch ? fileExtMatch[1] : "pdf";
@@ -276,9 +265,7 @@ const NotesBrowsingPage = () => {
                     alert("Download failed. Please try again.");
                   }
                 }}
-
-
-                className="flex-1 py-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-md flex justify-center items-center gap-2 hover:scale-105 transition shadow"
+                className="flex-1 py-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-md flex justify-center items-center gap-2 hover:scale-105 transition shadow text-sm"
               >
                 <FaDownload /> Download
               </button>
@@ -287,7 +274,7 @@ const NotesBrowsingPage = () => {
                 onClick={() => handleLikeToggle(note._id)}
                 className="text-lg hover:scale-110 transition"
               >
-                {likedNotes.includes(note._id) ? "❤️" : "🤍"}{" "}
+                {likedNotes.includes(note._id) ? "🩷" : "🤍"}{" "}
                 <span className="text-sm ml-1">{note.likes || 0}</span>
               </button>
             </div>
