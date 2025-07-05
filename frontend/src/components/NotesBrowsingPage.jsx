@@ -87,6 +87,11 @@ const NotesBrowsingPage = () => {
     }
   };
 
+  const handleViewNote = (note) => {
+    // Open the PDF in a new tab
+    window.open(note.fileUrl, '_blank', 'noopener,noreferrer');
+  };
+
   const formatDate = (dateStr) =>
     new Date(dateStr).toLocaleDateString("en-US", {
       year: "numeric",
@@ -98,6 +103,32 @@ const NotesBrowsingPage = () => {
     const subjectsSet = new Set();
     notes.forEach((n) => n.subject && subjectsSet.add(n.subject));
     return ["All Subjects", ...Array.from(subjectsSet)];
+  };
+
+  const handleDownloadNote = async (note) => {
+    try {
+      await trackDownload(note._id);
+      
+      const a = document.createElement('a');
+      const safeTitle = (note.title || "note")
+        .replace(/[^a-z0-9]/gi, '_')
+        .toLowerCase()
+        .substring(0, 50);
+      
+      a.download = `${safeTitle}.pdf`;
+      
+      const downloadUrl = note.fileUrl.includes('cloudinary.com')
+        ? note.fileUrl.replace('/upload/', '/upload/fl_attachment/')
+        : note.fileUrl;
+      
+      a.href = downloadUrl;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Download error:", err);
+      alert("Download failed. Please try again.");
+    }
   };
 
   const subjects = extractSubjects();
@@ -230,41 +261,14 @@ const NotesBrowsingPage = () => {
 
             <div className="mt-4 flex justify-between items-center gap-2">
               <button
-                onClick={() => window.open(note.fileUrl, "_blank")}
+                onClick={() => handleViewNote(note)}
                 className="flex-1 flex items-center justify-center gap-2 py-2 text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 text-sm"
               >
                 <FaEye /> View
               </button>
 
               <button
-                onClick={async () => {
-                  try {
-                    await trackDownload(note._id);
-                    const response = await fetch(note.fileUrl);
-                    if (!response.ok) throw new Error("Download failed");
-
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-
-                    const urlPath = new URL(note.fileUrl).pathname;
-                    const fileExtMatch = urlPath.match(/\.(\w+)(?:\?|$)/);
-                    const fileExt = fileExtMatch ? fileExtMatch[1] : "pdf";
-
-                    const safeTitle = (note.title || "note").replace(/[^a-z0-9]/gi, "_").toLowerCase();
-
-                    a.href = url;
-                    a.download = `${safeTitle}.${fileExt}`;
-
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                  } catch (err) {
-                    console.error("Download error:", err);
-                    alert("Download failed. Please try again.");
-                  }
-                }}
+                onClick={() => handleDownloadNote(note)}
                 className="flex-1 py-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-md flex justify-center items-center gap-2 hover:scale-105 transition shadow text-sm"
               >
                 <FaDownload /> Download
