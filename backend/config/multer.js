@@ -1,10 +1,10 @@
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("./cloudinary") 
+const cloudinary = require("./cloudinary"); 
 const path = require("path");
 
 const storage = new CloudinaryStorage({
-  cloudinary, 
+  cloudinary,
   params: async (req, file) => ({
     folder: process.env.CLOUDINARY_UPLOAD_FOLDER || "notes",
     resource_type: "auto",
@@ -12,6 +12,9 @@ const storage = new CloudinaryStorage({
   }),
 });
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, 
+});
 
 module.exports = upload;

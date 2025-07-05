@@ -1,3 +1,5 @@
+// ✅ FINAL DASHBOARD.JSX WITH IMAGE + BIO FIX
+
 import {
   Upload,
   Download,
@@ -42,26 +44,26 @@ export default function Dashboard() {
       try {
         setLoading(true);
         setError(null);
-        
-        const token = localStorage.getItem('token');
+
+        const token = localStorage.getItem("token");
         if (!token) {
-          setError('No authentication token found');
+          setError("No authentication token found");
           setLoading(false);
           return;
         }
 
-        // Use env variable or fallback to localhost:3000
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-        const response = await axios.get(`${API_BASE_URL}/api/auth/dashboard-stats`, {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+        const response = await axios.get(`${API_BASE_URL}/api/users/dashboard-stats`, {
+
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         const { user, stats } = response.data;
-        
+
         setUserData({
-          username: user.username || user.name || 'User',
+          username: user.username || user.name || "User",
           joinDate: new Date(user.joinDate),
           uploadedNotes: stats.uploadedNotes,
           downloadedNotes: stats.downloadedNotes,
@@ -69,13 +71,15 @@ export default function Dashboard() {
           uploadedThisMonth: stats.uploadedThisMonth,
           downloadedThisMonth: stats.downloadedThisMonth,
           reviewsThisMonth: stats.reviewsThisMonth,
-          averageRating: stats.averageRating
+          averageRating: stats.averageRating,
+          imageUrl: user.imageUrl || "",   // ✅ Added
+          bio: user.bio || "",             // ✅ Added
         });
 
         setBio(user.bio || "");
       } catch (err) {
-        console.error('Error fetching user data:', err);
-        setError(err.response?.data?.message || 'Failed to load user data');
+        console.error("Error fetching user data:", err);
+        setError(err.response?.data?.message || "Failed to load user data");
       } finally {
         setLoading(false);
       }
@@ -83,6 +87,37 @@ export default function Dashboard() {
 
     fetchUserData();
   }, []);
+
+  const handleBioSubmit = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("bio", newBio);
+      if (image) formData.append("image", image);
+
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}/api/users/update-profile`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setBio(newBio);
+      setUserData((prev) => ({
+        ...prev,
+        bio: newBio,
+        imageUrl: res.data.imageUrl || prev.imageUrl,
+      }));
+
+      setShowModal(false);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+    }
+  };
 
   const formatJoinDate = (date) => {
     const options = { year: "numeric", month: "long" };
@@ -105,37 +140,6 @@ export default function Dashboard() {
   const handleUploadNote = () => navigate("/upload");
   const handleBrowseNotes = () => navigate("/browse");
   const handleViewReviews = () => navigate("/notes");
-
-  const handleBioSubmit = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("bio", newBio);
-      if (image) formData.append("image", image);
-
-      const res = await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/users/update-profile`, 
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setBio(newBio);
-      setUserData((prev) => ({
-        ...prev,
-        bio: newBio,
-        imageUrl: res.data.imageUrl || prev.imageUrl,
-      }));
-
-      setShowModal(false);
-    } catch (err) {
-      console.error("Error updating profile:", err);
-    }
-  };
 
   if (loading) {
     return (
@@ -184,11 +188,10 @@ export default function Dashboard() {
             <span className="absolute -bottom-2 -right-2 w-6 h-6 bg-green-400 border-2 border-white rounded-full" />
           </div>
           <div className="text-center sm:text-left flex-1">
-            <h2 className="text-3xl font-bold mb-1">Hi {userData.username} 👋</h2>
+            <h2 className="text-3xl font-bold mb-1">Hi {userData.username} </h2>
             <p className="text-gray-600 flex gap-3 items-center text-sm">
               <Calendar className="w-4 h-4 text-purple-500" />
-              Joined {formatJoinDate(userData.joinDate)} •{" "}
-              {getTimeSinceJoining(userData.joinDate)} ago
+              Joined {formatJoinDate(userData.joinDate)} • {getTimeSinceJoining(userData.joinDate)} ago
             </p>
             {bio && <p className="text-sm mt-2 text-gray-700 italic">{bio}</p>}
           </div>
@@ -204,52 +207,42 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-10">
         <DashboardCard
           title="Uploaded Notes"
           icon={<Upload className="text-purple-600 w-6 h-6" />}
           color="purple"
           count={userData.uploadedNotes}
-          subInfo={[
-            { label: "This month", value: userData.uploadedThisMonth },
-            { label: "Total views", value: "-" },
-          ]}
+          subInfo={[{ label: "This month", value: userData.uploadedThisMonth }, { label: "Total views", value: "-" }]}
           actionText="Upload Note"
           onClick={handleUploadNote}
         />
-
         <DashboardCard
           title="Downloaded Notes"
           icon={<Download className="text-pink-600 w-6 h-6" />}
           color="pink"
           count={userData.downloadedNotes}
-          subInfo={[
-            { label: "This month", value: userData.downloadedThisMonth },
-            { label: "Favorites", value: "-" },
-          ]}
+          subInfo={[{ label: "This month", value: userData.downloadedThisMonth }, { label: "Favorites", value: "-" }]}
           actionText="Browse Notes"
           onClick={handleBrowseNotes}
         />
-
         <DashboardCard
           title="Reviews Received"
           icon={<Star className="text-yellow-600 w-6 h-6" />}
           color="yellow"
           count={userData.reviewsReceived}
           subInfo={[
-            {
-              label: "Avg. rating",
-              value:
-                userData.averageRating > 0
-                  ? `${userData.averageRating}★`
-                  : "-",
-            },
+            { label: "Avg. rating", value: userData.averageRating > 0 ? `${userData.averageRating}★` : "-" },
             { label: "This month", value: userData.reviewsThisMonth },
           ]}
           actionText="View Reviews"
           onClick={handleViewReviews}
         />
       </div>
+
+      {/* Footer & Edit Modal */}
       <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow p-8 border-t-4 border-indigo-400">
         <div className="flex items-center gap-3 mb-4">
           <BookOpen className="text-indigo-600 w-6 h-6" />
@@ -265,6 +258,8 @@ export default function Dashboard() {
       <footer className="text-center mt-12 text-gray-500 text-sm">
         © 2025 <span className="font-semibold">NoteNest</span> • Built with 💜 by students
       </footer>
+
+      {/* Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 relative">
@@ -338,4 +333,3 @@ function DashboardCard({ title, icon, count, subInfo, color, actionText, onClick
     </div>
   );
 }
-
