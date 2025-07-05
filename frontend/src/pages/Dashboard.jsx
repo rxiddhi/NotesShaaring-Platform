@@ -41,39 +41,41 @@ export default function Dashboard() {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-       const token = localStorage.getItem("token");
-console.log("🔑 Token from localStorage:", token);
+        setError(null);
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('No authentication token found');
+          setLoading(false);
+          return;
+        }
 
+        // Use env variable or fallback to localhost:3000
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const response = await axios.get(`${API_BASE_URL}/api/auth/dashboard-stats`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
 
-       const res = await axios.get(
-  `${import.meta.env.VITE_API_BASE_URL}/users/dashboard-stats`, 
-  { headers: { Authorization: `Bearer ${token}` } }
-);
-
-
-        const user = res.data?.user || {};
-        const stats = res.data?.stats || {};
-
+        const { user, stats } = response.data;
+        
         setUserData({
-          username: user.username || user.name || "User",
-          joinDate: new Date(user.joinDate || Date.now()),
-          uploadedNotes: stats.uploadedNotes || 0,
-          downloadedNotes: stats.downloadedNotes || 0,
-          reviewsReceived: stats.reviewsReceived || 0,
-          uploadedThisMonth: stats.uploadedThisMonth || 0,
-          downloadedThisMonth: stats.downloadedThisMonth || 0,
-          reviewsThisMonth: stats.reviewsThisMonth || 0,
-          averageRating: stats.averageRating || 0,
-          bio: user.bio || "",
-          imageUrl: user.imageUrl || "",
+          username: user.username || user.name || 'User',
+          joinDate: new Date(user.joinDate),
+          uploadedNotes: stats.uploadedNotes,
+          downloadedNotes: stats.downloadedNotes,
+          reviewsReceived: stats.reviewsReceived,
+          uploadedThisMonth: stats.uploadedThisMonth,
+          downloadedThisMonth: stats.downloadedThisMonth,
+          reviewsThisMonth: stats.reviewsThisMonth,
+          averageRating: stats.averageRating
         });
 
         setBio(user.bio || "");
       } catch (err) {
-        console.error("Error fetching user data:", err);
-        setError(
-          err.response?.data?.message || err.message || "Failed to load dashboard"
-        );
+        console.error('Error fetching user data:', err);
+        setError(err.response?.data?.message || 'Failed to load user data');
       } finally {
         setLoading(false);
       }
@@ -112,16 +114,15 @@ console.log("🔑 Token from localStorage:", token);
       if (image) formData.append("image", image);
 
       const res = await axios.put(
-  `${import.meta.env.VITE_API_BASE_URL}/users/update-profile`, 
-  formData,
-  {
-    headers: {
-      "Content-Type": "multipart/form-data",
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
-
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/users/update-profile`, 
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       setBio(newBio);
       setUserData((prev) => ({
@@ -337,3 +338,4 @@ function DashboardCard({ title, icon, count, subInfo, color, actionText, onClick
     </div>
   );
 }
+
