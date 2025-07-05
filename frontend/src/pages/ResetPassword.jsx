@@ -1,10 +1,10 @@
-// frontend/pages/ResetPassword.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 export default function ResetPassword() {
-  const { token } = useParams(); // Get token from URL
+  const { token } = useParams(); 
   const navigate = useNavigate();
 
   const [password, setPassword] = useState('');

@@ -16,8 +16,6 @@ export default function DoubtDetailPage() {
     const [editingDoubt, setEditingDoubt] = useState(false);
     const [editDoubtTitle, setEditDoubtTitle] = useState('');
     const [editDoubtSubject, setEditDoubtSubject] = useState('');
-
-    // Get current userId from token
     let currentUserId = null;
     const token = localStorage.getItem('token');
     if (token) {

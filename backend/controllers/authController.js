@@ -4,12 +4,10 @@ const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Generate Reset Token (valid for 15 minutes)
 const generateResetToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
 };
 
-// Forgot Password Controller
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -24,7 +22,7 @@ const forgotPassword = async (req, res) => {
     const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
 
     const emailResponse = await resend.emails.send({
-      from: "WisdomChain <your_verified_email@yourdomain.com>", // Must be a verified sender in Resend
+      from: "WisdomChain <your_verified_email@yourdomain.com>", 
       to: email,
       subject: "Reset Your Password",
       html: `
@@ -44,7 +42,6 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-// Export your controller(s)
 module.exports = {
   forgotPassword,
 };
