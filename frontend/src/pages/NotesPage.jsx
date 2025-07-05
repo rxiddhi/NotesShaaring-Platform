@@ -82,7 +82,7 @@ const NotesPage = () => {
     setDownloading(note._id);
     try {
       await axios.put(`${API_BASE_URL}/notes/${note._id}/download`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
       const response = await axios.get(note.fileUrl, { responseType: 'blob' });
@@ -213,7 +213,7 @@ const NotesPage = () => {
           <section className="mb-12">
             <h3 className="text-2xl font-semibold mb-4 text-green-800">🟢 Uploaded Notes</h3>
             {uploadedNotes.length === 0 ? (
-              <p className="text-gray-600">You haven’t uploaded any notes yet.</p>
+              <p className="text-gray-600">You haven't uploaded any notes yet.</p>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
                 {uploadedNotes.map(renderNoteCard)}
@@ -224,7 +224,7 @@ const NotesPage = () => {
           <section>
             <h3 className="text-2xl font-semibold mb-4 text-blue-800">🔵 Downloaded Notes</h3>
             {downloadedNotes.length === 0 ? (
-              <p className="text-gray-600">You haven’t downloaded any notes yet.</p>
+              <p className="text-gray-600">You haven't downloaded any notes yet.</p>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
                 {downloadedNotes.map(renderNoteCard)}

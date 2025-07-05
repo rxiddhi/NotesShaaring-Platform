@@ -1,35 +1,62 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { Star, MessageCircle, AlertCircle, Edit, Trash2, User, Calendar } from 'lucide-react';
 import ReviewForm from './ReviewForm';
+
+const API_BASE_URL = 'http://localhost:3000/api';
 
 const ReviewList = ({ noteId, currentUserId }) => {
   const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [editing, setEditing] = useState(null);
 
   const fetchReviews = React.useCallback(async () => {
     try {
-        const res = await axios.get(`/api/notes/${noteId}/reviews`);
-      setReviews(res.data);
+      setLoading(true);
+      setError('');
+      
+      const response = await fetch(`${API_BASE_URL}/reviews/${noteId}/reviews`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setReviews(Array.isArray(data) ? data : []);
+      } else {
+        setError('Failed to load reviews');
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching reviews:', err);
+      setError('Failed to load reviews');
+    } finally {
+      setLoading(false);
     }
   }, [noteId]);
 
   const handleDelete = async () => {
-    if (window.confirm('Delete your review?')) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`/api/notes/${noteId}/reviews`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    if (!window.confirm('Delete your review?')) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to delete reviews');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/reviews/${noteId}/reviews`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
         setEditing(null);
         fetchReviews();
-      } catch (err) {
-        console.error(err);
-        alert('Failed to delete review.');
+      } else {
+        alert('Failed to delete review');
       }
+    } catch (err) {
+      console.error('Error deleting review:', err);
+      alert('Failed to delete review');
     }
   };
 
@@ -37,21 +64,71 @@ const ReviewList = ({ noteId, currentUserId }) => {
     fetchReviews();
   }, [fetchReviews]);
 
-  const currentUserReview = reviews.find(r => r.user._id === currentUserId);
+  // Debug logging
+  console.log('ReviewList - currentUserId:', currentUserId);
+  console.log('ReviewList - reviews:', reviews);
+  console.log('ReviewList - currentUserReview:', reviews.find(r => r.user?._id === currentUserId));
+
+  const currentUserReview = reviews.find(r => r.user?._id === currentUserId);
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const renderStars = (rating) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`w-4 h-4 ${i < rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
+      />
+    ));
+  };
+
+  if (loading) {
+    return (
+      <div className="mt-8 animate-slide-up">
+        <h3 className="text-xl font-bold text-foreground mb-4 flex items-center space-x-2">
+          <MessageCircle className="w-5 h-5 text-primary" />
+          <span>Reviews</span>
+        </h3>
+        <div className="text-center py-8">
+          <div className="loading mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading reviews...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="mt-6">
-      <h3 className="text-xl font-semibold mb-4">⭐ Reviews</h3>
+    <div className="mt-8 animate-slide-up">
+      <h3 className="text-xl font-bold text-foreground mb-6 flex items-center space-x-2">
+        <MessageCircle className="w-5 h-5 text-primary" />
+        <span>Reviews</span>
+      </h3>
 
+      {error && (
+        <div className="flex items-center space-x-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg mb-6">
+          <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+          <p className="text-destructive text-sm">{error}</p>
+        </div>
+      )}
+
+      {/* Current User Review Section */}
       {currentUserId ? (
-        <div className="mb-4 p-4 bg-blue-50 rounded">
+        <div className="card-interactive p-6 mb-6">
           {editing && (
-            <p className="mb-2 font-medium text-blue-800">Update Your Review</p>
+            <p className="mb-4 font-medium text-foreground">Update Your Review</p>
           )}
           {!currentUserReview && !editing && (
-            <p className="mb-2 font-medium text-blue-800">Add a Review</p>
+            <p className="mb-4 font-medium text-foreground">Add a Review</p>
           )}
-          {/* Only show form if adding or editing */}
+          {/* Show form if adding or editing */}
           {(!currentUserReview || editing) ? (
             <ReviewForm
               noteId={noteId}
@@ -59,52 +136,84 @@ const ReviewList = ({ noteId, currentUserId }) => {
               refreshReviews={() => { fetchReviews(); setEditing(null); }}
             />
           ) : (
-            <div className="border rounded p-3 bg-gray-50">
-              <div className="flex justify-between items-center">
-                <strong>{currentUserReview.user.name}</strong>
-                <span className="text-yellow-500">{'★'.repeat(currentUserReview.rating || 0)}</span>
+            <div className="bg-accent rounded-lg p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center space-x-2">
+                  <User className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-medium text-foreground">{currentUserReview.user?.username || 'Anonymous'}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  {renderStars(currentUserReview.rating || 0)}
+                </div>
               </div>
-              <p className="mt-1">{currentUserReview.comment}</p>
-              <div className="text-xs text-gray-500">
-                {new Date(currentUserReview.createdAt).toLocaleString()}
-                {currentUserReview.updatedAt && currentUserReview.updatedAt !== currentUserReview.createdAt && ' (edited)'}
-              </div>
-              <div className="text-right space-x-2 mt-1">
-                <button
-                  onClick={() => setEditing(currentUserReview)}
-                  className="text-blue-600 hover:underline text-sm"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="text-red-500 hover:underline text-sm"
-                >
-                  Delete
-                </button>
+              <p className="text-foreground mb-3">{currentUserReview.comment}</p>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center space-x-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{formatDate(currentUserReview.createdAt)}</span>
+                  {currentUserReview.updatedAt && currentUserReview.updatedAt !== currentUserReview.createdAt && (
+                    <span className="italic">(edited)</span>
+                  )}
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setEditing(currentUserReview)}
+                    className="text-primary hover:text-primary/80 transition-colors flex items-center space-x-1"
+                  >
+                    <Edit className="w-3 h-3" />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="text-destructive hover:text-destructive/80 transition-colors flex items-center space-x-1"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    <span>Delete</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </div>
       ) : (
-        <p className="text-gray-600 text-sm">🔒 Please login to leave a review.</p>
+        <div className="card-interactive p-6 mb-6 text-center">
+          <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-muted-foreground">Please login to leave a review.</p>
+        </div>
       )}
 
-      <div className="mt-4 space-y-4">
-        {reviews.length === 0 && <p className="text-gray-500">No reviews yet.</p>}
-        {reviews.filter(r => r.user._id !== currentUserId).map((review) => (
-          <div key={review._id} className="border rounded p-3 bg-gray-50">
-            <div className="flex justify-between items-center">
-              <strong>{review.user.name}</strong>
-              <span className="text-yellow-500">{'★'.repeat(review.rating || 0)}</span>
-            </div>
-            <p className="mt-1">{review.comment}</p>
-            <div className="text-xs text-gray-500">
-              {new Date(review.createdAt).toLocaleString()}
-              {review.updatedAt && review.updatedAt !== review.createdAt && ' (edited)'}
-            </div>
+      {/* Other Reviews */}
+      <div className="space-y-4">
+        {reviews.length === 0 ? (
+          <div className="card-interactive p-8 text-center">
+            <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No reviews yet.</p>
           </div>
-        ))}
+        ) : (
+          reviews
+            .filter(r => r.user?._id !== currentUserId)
+            .map((review) => (
+              <div key={review._id} className="card-interactive p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center space-x-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium text-foreground">{review.user?.username || 'Anonymous'}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    {renderStars(review.rating || 0)}
+                  </div>
+                </div>
+                <p className="text-foreground mb-3">{review.comment}</p>
+                <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                  <Calendar className="w-3 h-3" />
+                  <span>{formatDate(review.createdAt)}</span>
+                  {review.updatedAt && review.updatedAt !== review.createdAt && (
+                    <span className="italic">(edited)</span>
+                  )}
+                </div>
+              </div>
+            ))
+        )}
       </div>
     </div>
   );

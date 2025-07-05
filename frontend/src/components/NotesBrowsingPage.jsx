@@ -1,186 +1,280 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
-  FaDownload,
-  FaEye,
-  FaSearch,
-  FaCalendarAlt,
-  FaUser,
-  FaBookOpen,
-} from "react-icons/fa";
+  Download,
+  Eye,
+  Search,
+  Calendar,
+  User,
+  BookOpen,
+  Heart,
+  Filter,
+  SortAsc,
+  Star,
+  Share2,
+  AlertCircle,
+  Loader,
+  Edit,
+  Trash2
+} from "lucide-react";
 
-const API_BASE_URL = import.meta.env.MODE === "production"
-  ? "https://notenest-lzm0.onrender.com/api"
-  : "http://localhost:3000/api";
+const API_BASE_URL = "http://localhost:3000/api";
+
+const subjects = [
+  'All Subjects',
+  'General',
+  'DSA',
+  'WAP',
+  'ADA',
+  'Maths',
+  'PSP',
+  'IKS',
+  'Physics',
+  'English',
+  'Others'
+];
+
+const sortOptions = [
+  { value: 'newest', label: 'Newest First' },
+  { value: 'oldest', label: 'Oldest First' },
+  { value: 'downloads', label: 'Most Downloaded' },
+  { value: 'likes', label: 'Most Liked' },
+  { value: 'title', label: 'Title A-Z' }
+];
 
 const NotesBrowsingPage = () => {
+  const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
-  const [sortBy, setSortBy] = useState("newest");
-  const [likedNotes, setLikedNotes] = useState([]);
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('All Subjects');
+  const [sortBy, setSortBy] = useState('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [favorites, setFavorites] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("likedNotes");
-    if (stored) setLikedNotes(JSON.parse(stored));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("likedNotes", JSON.stringify(likedNotes));
-  }, [likedNotes]);
-
-  useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/notes`);
-        if (!res.ok) throw new Error("Failed to fetch notes");
-
-        const data = await res.json();
-        const enriched = (data.notes || []).map((note) => ({
-          ...note,
-          likes: note.likes || 0,
-        }));
-
-        setNotes(enriched);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchNotes();
-  }, []);
+    fetchFavorites();
+    fetchCurrentUser();
+  }, [searchTerm, selectedSubject, sortBy, currentPage]);
 
-  const handleLikeToggle = (noteId) => {
-    const updatedNotes = notes.map((note) => {
-      if (note._id === noteId) {
-        const isLiked = likedNotes.includes(noteId);
-        const updatedLikes = isLiked
-          ? Math.max(0, (note.likes || 0) - 1)
-          : (note.likes || 0) + 1;
-        return { ...note, likes: updatedLikes };
-      }
-      return note;
-    });
-
-    setNotes(updatedNotes);
-    setLikedNotes((prev) =>
-      prev.includes(noteId)
-        ? prev.filter((id) => id !== noteId)
-        : [...prev, noteId]
-    );
-  };
-
-  const trackDownload = async (noteId) => {
+  const fetchNotes = async () => {
     try {
-      const token = localStorage.getItem("token");
-      await fetch(`${API_BASE_URL}/notes/${noteId}/download`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      setLoading(true);
+      setError('');
+
+      const response = await axios.get(`${API_BASE_URL}/notes`);
+      const allNotes = response.data.notes || [];
+      
+      // Client-side filtering and sorting
+      let filteredNotes = allNotes;
+      
+      // Filter by search term
+      if (searchTerm) {
+        filteredNotes = filteredNotes.filter(note => 
+          note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          note.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          note.subject.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      
+      // Filter by subject
+      if (selectedSubject !== 'All Subjects') {
+        filteredNotes = filteredNotes.filter(note => 
+          note.subject === selectedSubject
+        );
+      }
+      
+      // Sort notes
+      filteredNotes.sort((a, b) => {
+        switch (sortBy) {
+          case 'newest':
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          case 'oldest':
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          case 'downloads':
+            return (b.downloadCount || 0) - (a.downloadCount || 0);
+          case 'likes':
+            return (b.likes || 0) - (a.likes || 0);
+          case 'title':
+            return a.title.localeCompare(b.title);
+          default:
+            return 0;
+        }
       });
-    } catch {
-      console.error("Download tracking failed");
+      
+      setNotes(filteredNotes);
+      setTotalPages(1); // No pagination for now
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+      setError('Failed to load notes. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleViewNote = (note) => {
-    // Open the PDF in a new tab
-    window.open(note.fileUrl, '_blank', 'noopener,noreferrer');
-  };
-
-  const formatDate = (dateStr) =>
-    new Date(dateStr).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-
-  const extractSubjects = () => {
-    const subjectsSet = new Set();
-    notes.forEach((n) => n.subject && subjectsSet.add(n.subject));
-    return ["All Subjects", ...Array.from(subjectsSet)];
-  };
-
-  const handleDownloadNote = async (note) => {
+  const fetchCurrentUser = async () => {
     try {
-      await trackDownload(note._id);
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
-      const a = document.createElement('a');
-      const safeTitle = (note.title || "note")
-        .replace(/[^a-z0-9]/gi, '_')
-        .toLowerCase()
-        .substring(0, 50);
-      
-      a.download = `${safeTitle}.pdf`;
-      
-      const downloadUrl = note.fileUrl.includes('cloudinary.com')
-        ? note.fileUrl.replace('/upload/', '/upload/fl_attachment/')
-        : note.fileUrl;
-      
-      a.href = downloadUrl;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } catch (err) {
-      console.error("Download error:", err);
-      alert("Download failed. Please try again.");
+      if (response.ok) {
+        const userData = await response.json();
+        setCurrentUser(userData);
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
     }
   };
 
-  const subjects = extractSubjects();
+  const fetchFavorites = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
-  const filteredNotes = notes
-    .filter((n) => {
-      const matchText =
-        n.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        n.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        n.uploadedBy?.username?.toLowerCase().includes(searchTerm.toLowerCase());
+      const response = await axios.get(`${API_BASE_URL}/notes/favorites`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFavorites(response.data.map(note => note._id));
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
 
-      const matchSubject =
-        selectedSubject === "All Subjects" || n.subject === selectedSubject;
-
-      return matchText && matchSubject;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        case "oldest":
-          return new Date(a.createdAt) - new Date(b.createdAt);
-        case "popular":
-          return (b.downloadCount || 0) - (a.downloadCount || 0);
-        case "title":
-          return a.title.localeCompare(b.title);
-        case "reviewed":
-          return (b.reviewCount || 0) - (a.reviewCount || 0);
-        default:
-          return 0;
+  const handleDownload = async (noteId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to download notes');
+        return;
       }
-    });
 
-  if (loading) {
+      // First, track the download
+      await axios.put(`${API_BASE_URL}/notes/${noteId}/download`, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      // Then try to download the file
+      const note = notes.find(n => n._id === noteId);
+      if (note && note.fileUrl) {
+        // Create a temporary link to download the file
+        const link = document.createElement('a');
+        link.href = note.fileUrl;
+        link.setAttribute('download', note.title || 'note');
+        link.setAttribute('target', '_blank');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+
+      // Refresh notes to update download count
+      fetchNotes();
+    } catch (error) {
+      console.error('Error downloading note:', error);
+      alert('Failed to download note');
+    }
+  };
+
+  const handleDelete = async (noteId) => {
+    if (!confirm('Are you sure you want to delete this note?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to delete notes');
+        return;
+      }
+
+      await axios.delete(`${API_BASE_URL}/notes/${noteId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Remove from local state
+      setNotes(prev => prev.filter(note => note._id !== noteId));
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      alert('Failed to delete note');
+    }
+  };
+
+  const handleFavorite = async (noteId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to favorite notes');
+      return;
+    }
+    const isFavorited = favorites.includes(noteId);
+    try {
+      let response;
+      if (isFavorited) {
+        response = await axios.delete(`${API_BASE_URL}/notes/${noteId}/favorite`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        response = await axios.post(`${API_BASE_URL}/notes/${noteId}/favorite`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+      if (response.status === 200) {
+        setFavorites(prev =>
+          isFavorited
+            ? prev.filter(id => id !== noteId)
+            : [...prev, noteId]
+        );
+      } else {
+        alert('Failed to update favorite');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to update favorite');
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const isOwner = (note) => {
+    if (!currentUser || !note.uploadedBy) return false;
+    const userId = typeof note.uploadedBy === 'object' ? note.uploadedBy._id : note.uploadedBy;
+    return userId?.toString() === (currentUser.userId || currentUser._id)?.toString();
+  };
+
+  if (loading && notes.length === 0) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
-        <div className="animate-spin h-12 w-12 border-4 border-purple-500 border-t-transparent rounded-full"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center animate-fade-in">
+          <div className="loading mx-auto mb-4"></div>
+          <p className="text-muted-foreground font-medium">Loading notes...</p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && notes.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-red-50">
-        <div className="bg-red-100 text-red-700 p-6 rounded-lg shadow">
-          <h2 className="font-bold mb-2">Failed to load notes</h2>
-          <p>{error}</p>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="card-interactive p-8 text-center max-w-md animate-scale-in">
+          <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-foreground mb-2">Error Loading Notes</h2>
+          <p className="text-muted-foreground mb-6">{error}</p>
           <button
-            onClick={() => window.location.reload()}
-            className="mt-4 bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
+            onClick={fetchNotes}
+            className="bg-gradient-primary text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated"
           >
-            Retry
+            Try Again
           </button>
         </div>
       </div>
@@ -188,102 +282,224 @@ const NotesBrowsingPage = () => {
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
-      <h1 className="text-3xl font-bold mb-6 text-purple-800 text-center">📚 Browse Shared Notes</h1>
-
-      <div className="flex flex-wrap gap-3 items-center mb-6 bg-white p-4 rounded-xl shadow-md">
-        <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md flex-1">
-          <FaSearch className="text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search notes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-sm"
-          />
+    <div className="min-h-screen bg-background py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 animate-slide-up">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            Browse Notes
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Discover and download high-quality study materials from the community
+          </p>
         </div>
 
-        <select
-          value={selectedSubject}
-          onChange={(e) => setSelectedSubject(e.target.value)}
-          className="p-2 border border-gray-300 rounded-md text-sm"
-        >
-          {subjects.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="p-2 border border-gray-300 rounded-md text-sm"
-        >
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
-          <option value="popular">Most Popular</option>
-          <option value="title">Title A-Z</option>
-          <option value="reviewed">Reviewed</option>
-        </select>
-      </div>
-
-      <p className="mb-4 text-gray-600 text-sm">
-        Showing <b>{filteredNotes.length}</b> {filteredNotes.length === 1 ? "note" : "notes"}
-      </p>
-
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredNotes.map((note) => (
-          <div
-            key={note._id}
-            className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition duration-200"
-          >
-            <div className="flex justify-between text-sm mb-2 text-gray-500">
-              <span className="flex items-center gap-1 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
-                <FaBookOpen /> {note.subject || "Unknown"}
-              </span>
-              <span>{note.pageCount || "N/A"} pages</span>
+        {/* Search and Filters */}
+        <div className="card-interactive p-6 mb-8 animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search notes by title, description, or tags..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                />
+              </div>
             </div>
-
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">{note.title}</h3>
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <FaUser /> {note.uploadedBy?.username || "Anonymous"}
-            </p>
-            <p className="text-sm text-gray-600 flex items-center gap-1 mb-2">
-              <FaCalendarAlt /> {formatDate(note.createdAt)}
-            </p>
-
-            <div className="text-xs text-gray-400 flex justify-between mt-3">
-              <span>{note.downloadCount || 0} downloads</span>
-              <span>PDF</span>
-              <span>{note.reviewCount || 0} reviews</span>
-            </div>
-
-            <div className="mt-4 flex justify-between items-center gap-2">
-              <button
-                onClick={() => handleViewNote(note)}
-                className="flex-1 flex items-center justify-center gap-2 py-2 text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 text-sm"
-              >
-                <FaEye /> View
-              </button>
-
-              <button
-                onClick={() => handleDownloadNote(note)}
-                className="flex-1 py-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-md flex justify-center items-center gap-2 hover:scale-105 transition shadow text-sm"
-              >
-                <FaDownload /> Download
-              </button>
-
-              <button
-                onClick={() => handleLikeToggle(note._id)}
-                className="text-lg hover:scale-110 transition"
-              >
-                {likedNotes.includes(note._id) ? "🩷" : "🤍"}{" "}
-                <span className="text-sm ml-1">{note.likes || 0}</span>
-              </button>
+            <div className="flex gap-4">
+              <div className="relative group">
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-4 h-4" />
+                <select
+                  value={selectedSubject}
+                  onChange={(e) => {
+                    setSelectedSubject(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="pl-10 pr-8 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
+                >
+                  {subjects.map((subject, index) => (
+                    <option key={index} value={subject}>{subject}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="relative group">
+                <SortAsc className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-4 h-4" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => {
+                    setSortBy(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="pl-10 pr-8 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
+                >
+                  {sortOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
-        ))}
+        </div>
+
+        <p className="mb-6 text-muted-foreground text-sm animate-slide-up" style={{ animationDelay: '200ms' }}>
+          Showing {notes.length} of {totalPages * 12} notes
+        </p>
+
+        {notes.length === 0 ? (
+          <div className="card-interactive p-12 text-center animate-slide-up" style={{ animationDelay: '300ms' }}>
+            <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-foreground mb-2">No notes found</h3>
+            <p className="text-muted-foreground mb-6">
+              {searchTerm || selectedSubject !== 'All Subjects'
+                ? 'Try adjusting your search or filters'
+                : 'No notes have been uploaded yet. Be the first to share!'
+              }
+            </p>
+            {!searchTerm && selectedSubject === 'All Subjects' && (
+              <button
+                onClick={() => navigate('/upload')}
+                className="bg-gradient-primary text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated"
+              >
+                Upload First Note
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {notes.map((note, index) => (
+                <div 
+                  key={note._id} 
+                  className="card-interactive p-6 group animate-slide-up hover-lift"
+                  style={{ animationDelay: `${300 + index * 50}ms` }}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full">
+                      {note.subject}
+                    </span>
+                    <div className="flex gap-2">
+                      {isOwner(note) && (
+                        <>
+                          <button
+                            onClick={() => handleDelete(note._id)}
+                            className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-all duration-200 hover-scale"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => navigate(`/notes/${note._id}/edit`)}
+                            className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 hover-scale"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={() => handleFavorite(note._id)}
+                        className={`p-2 rounded-lg transition-all duration-200 hover-scale ${
+                          favorites.includes(note._id) 
+                            ? 'text-red-500 bg-red-50 dark:bg-red-900/20' 
+                            : 'text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+                        }`}
+                      >
+                        <Heart className={`w-4 h-4 ${favorites.includes(note._id) ? "fill-current" : ""}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <h3 className="text-lg font-bold text-foreground mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                    {note.title}
+                  </h3>
+
+                  {note.description && (
+                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+                      {note.description}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                    <div className="flex items-center space-x-2">
+                      <User className="w-3 h-3" />
+                      <span>{note.uploadedBy?.username || 'Anonymous'}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-3 h-3" />
+                      <span>{formatDate(note.createdAt)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                    <div className="flex items-center space-x-2">
+                      <Download className="w-3 h-3" />
+                      <span>{note.downloadCount || 0} downloads</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Star className="w-3 h-3" />
+                      <span>{note.averageRating > 0 ? note.averageRating.toFixed(1) : 'No ratings yet'}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => navigate(`/notes/${note._id}`)}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 hover-scale"
+                    >
+                      <Eye className="w-4 h-4" />
+                      View
+                    </button>
+                    <button
+                      onClick={() => handleDownload(note._id)}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-8 animate-slide-up" style={{ animationDelay: '400ms' }}>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                        currentPage === page
+                          ? 'bg-gradient-primary text-white'
+                          : 'border border-border text-foreground hover:bg-accent'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

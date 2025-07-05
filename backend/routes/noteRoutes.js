@@ -7,12 +7,13 @@ const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
 
-
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
     const { title, subject, description } = req.body;
     if (!req.file || !title || !subject) {
-      return res.status(400).json({ message: "File, title, and subject are required" });
+      return res
+        .status(400)
+        .json({ message: "File, title, and subject are required" });
     }
 
     const newNote = new Note({
@@ -23,7 +24,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
       uploadedBy: req.user.userId,
       downloadedBy: [],
       downloadCount: 0,
-      likedBy: [], 
+      likedBy: [],
     });
 
     await newNote.save();
@@ -37,7 +38,6 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
     res.status(500).json({ message: "Server error while uploading note" });
   }
 });
-
 
 router.get("/", async (req, res) => {
   try {
@@ -68,10 +68,27 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Favorites route - must come before /:id route
+router.get("/favorites", protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const notes = await Note.find({ likedBy: userId })
+      .sort({ createdAt: -1 })
+      .populate("uploadedBy", "username email");
+
+    res.status(200).json(notes);
+  } catch (err) {
+    console.error("Fetch favorites error:", err);
+    res.status(500).json({ message: "Failed to fetch favorites" });
+  }
+});
 
 router.get("/:id", async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id).populate("uploadedBy", "username email");
+    const note = await Note.findById(req.params.id).populate(
+      "uploadedBy",
+      "username email"
+    );
     if (!note) return res.status(404).json({ message: "Note not found" });
     res.status(200).json({ note });
   } catch (err) {
@@ -79,7 +96,6 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 router.put("/:id/download", protect, async (req, res) => {
   try {
@@ -100,7 +116,6 @@ router.put("/:id/download", protect, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 router.put("/:id/like", protect, async (req, res) => {
   try {
@@ -129,6 +144,50 @@ router.put("/:id/like", protect, async (req, res) => {
   }
 });
 
+// Favorite/Unfavorite routes
+router.post("/:id/favorite", protect, async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: "Note not found" });
+
+    const userId = req.user.userId;
+    if (!note.likedBy.includes(userId)) {
+      note.likedBy.push(userId);
+      await note.save();
+    }
+
+    res.status(200).json({
+      message: "Added to favorites",
+      likedBy: note.likedBy,
+      likeCount: note.likedBy.length,
+    });
+  } catch (err) {
+    console.error("Add to favorites error:", err);
+    res.status(500).json({ message: "Server error while adding to favorites" });
+  }
+});
+
+router.delete("/:id/favorite", protect, async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: "Note not found" });
+
+    const userId = req.user.userId;
+    note.likedBy = note.likedBy.filter((id) => id.toString() !== userId);
+    await note.save();
+
+    res.status(200).json({
+      message: "Removed from favorites",
+      likedBy: note.likedBy,
+      likeCount: note.likedBy.length,
+    });
+  } catch (err) {
+    console.error("Remove from favorites error:", err);
+    res
+      .status(500)
+      .json({ message: "Server error while removing from favorites" });
+  }
+});
 
 router.delete("/:id", protect, async (req, res) => {
   try {
@@ -136,7 +195,9 @@ router.delete("/:id", protect, async (req, res) => {
     if (!note) return res.status(404).json({ message: "Note not found" });
 
     if (note.uploadedBy.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Unauthorized to delete this note" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete this note" });
     }
 
     await note.deleteOne();
@@ -147,14 +208,15 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
-
 router.patch("/:id", protect, upload.single("file"), async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
 
     if (note.uploadedBy.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Unauthorized to edit this note" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to edit this note" });
     }
 
     if (req.body.title) note.title = req.body.title;
@@ -169,7 +231,6 @@ router.patch("/:id", protect, upload.single("file"), async (req, res) => {
     res.status(500).json({ message: "Server error while updating note" });
   }
 });
-
 
 router.get("/:id/download-file", async (req, res) => {
   try {
@@ -187,7 +248,10 @@ router.get("/:id/download-file", async (req, res) => {
     }
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="${path.basename(filePath)}"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${path.basename(filePath)}"`
+    );
 
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
