@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -57,7 +56,7 @@ export default function ResetPassword() {
             <label className="block text-sm font-medium text-gray-700">New Password</label>
             <input
               type="password"
-              className="w-full mt-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full mt-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-coral"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -67,7 +66,7 @@ export default function ResetPassword() {
             <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
             <input
               type="password"
-              className="w-full mt-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full mt-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-coral"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -75,7 +74,7 @@ export default function ResetPassword() {
           </div>
           <button
             type="submit"
-            className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-indigo-600"
+            className="w-full py-3 text-white font-semibold rounded-xl bg-gradient-to-br from-[#ffb3a7] to-[#ff6f61] hover:from-[#e05a47] hover:to-[#ff6f61]"
             disabled={loading}
           >
             {loading ? 'Resetting...' : 'Reset Password'}

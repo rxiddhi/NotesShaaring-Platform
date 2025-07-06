@@ -32,7 +32,7 @@ export default function ForgotPassword() {
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
-              className="w-full mt-1 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full mt-1 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-coral"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -41,7 +41,7 @@ export default function ForgotPassword() {
           </div>
           <button
             type="submit"
-            className="w-full py-3 text-white font-semibold rounded-xl transition duration-300 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-indigo-600"
+            className="w-full py-3 text-white font-semibold rounded-xl transition duration-300 bg-gradient-to-br from-[#ffb3a7] to-[#ff6f61] hover:from-[#e05a47] hover:to-[#ff6f61]"
             disabled={loading}
           >
             {loading ? 'Sending...' : 'Send Reset Link'}

@@ -46,6 +46,7 @@ const sortOptions = [
 const NotesBrowsingPage = () => {
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
+  const [allNotes, setAllNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,10 +69,11 @@ const NotesBrowsingPage = () => {
       setError('');
 
       const response = await axios.get(`${API_BASE_URL}/notes`);
-      const allNotes = response.data.notes || [];
+      const allNotesFetched = response.data.notes || [];
+      setAllNotes(allNotesFetched);
       
       // Client-side filtering and sorting
-      let filteredNotes = allNotes;
+      let filteredNotes = allNotesFetched;
       
       // Filter by search term
       if (searchTerm) {
@@ -162,17 +164,34 @@ const NotesBrowsingPage = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
-      // Then try to download the file
+      // Then download the file using the authenticated route
       const note = notes.find(n => n._id === noteId);
-      if (note && note.fileUrl) {
-        // Create a temporary link to download the file
-        const link = document.createElement('a');
-        link.href = note.fileUrl;
-        link.setAttribute('download', note.title || 'note');
-        link.setAttribute('target', '_blank');
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+      if (note) {
+        const downloadUrl = `${API_BASE_URL}/notes/${noteId}/download-file`;
+        
+        // Fetch the file with authorization header
+        const response = await fetch(downloadUrl, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          // Create blob from response
+          const blob = await response.blob();
+          
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `${note.title || 'note'}.pdf`);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          
+          // Clean up the blob URL
+          window.URL.revokeObjectURL(url);
+        } else {
+          throw new Error('Failed to download file');
+        }
       }
 
       // Refresh notes to update download count
@@ -345,7 +364,7 @@ const NotesBrowsingPage = () => {
         </div>
 
         <p className="mb-6 text-muted-foreground text-sm animate-slide-up" style={{ animationDelay: '200ms' }}>
-          Showing {notes.length} of {totalPages * 12} notes
+          Showing {notes.length} of {allNotes.length} notes
         </p>
 
         {notes.length === 0 ? (

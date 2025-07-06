@@ -26,7 +26,7 @@
 }
 
 .navbar-logo:hover {
-    color: #2563eb;
+    color: var(--coral);
 }
 
 .navbar-links {
@@ -51,7 +51,7 @@
 }
 
 .nav-link.active {
-    background: #2563eb;
+    background: var(--coral);
     color: #ffffff;
 }
 

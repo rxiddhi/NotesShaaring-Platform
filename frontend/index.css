@@ -55,8 +55,9 @@
   --secondary-foreground: #1a1a1a;
   --muted: #f1f3f4;
   --muted-foreground: #5f6368;
-  --accent: #e8f5e8;
-  --accent-foreground: #1a1a1a;
+  --accent: #3bb3a4;
+  --accent-foreground: #fff;
+  --accent-light: #a7ffeb;
   --destructive: #dc3545;
   --border: #e1e5e9;
   --input: #ffffff;
@@ -76,10 +77,16 @@
   --sidebar-ring: #00a82d;
   --gradient-primary: linear-gradient(135deg, #00a82d 0%, #34a853 100%);
   --gradient-secondary: linear-gradient(135deg, #f8f9fa 0%, #e8f5e8 100%);
+  --vibrant-blue: #2563eb;
+  --vibrant-blue-light: #3b82f6;
+  --vibrant-blue-dark: #1d4ed8;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --coral: #3bb3a4;
+  --coral-light: #a7ffeb;
+  --coral-dark: #3bb3a4;
 }
 
 .dark {
@@ -95,8 +102,9 @@
   --secondary-foreground: #ffffff;
   --muted: #2a2f3e;
   --muted-foreground: #a0a0a0;
-  --accent: #1a2f1a;
-  --accent-foreground: #ffffff;
+  --accent: #3bb3a4;
+  --accent-foreground: #fff;
+  --accent-light: #a7ffeb;
   --destructive: #ff6b6b;
   --border: #2a2f3e;
   --input: #1a1f2e;
@@ -110,16 +118,22 @@
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #00d4aa;
   --sidebar-primary-foreground: #0f1419;
-  --sidebar-accent: #1a2f1a;
+  --sidebar-accent: #1e3a8a;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #2a2f3e;
   --sidebar-ring: #00d4aa;
   --gradient-primary: linear-gradient(135deg, #00d4aa 0%, #34d4b3 100%);
-  --gradient-secondary: linear-gradient(135deg, #1a1f2e 0%, #1a2f1a 100%);
+  --gradient-secondary: linear-gradient(135deg, #1a1f2e 0%, #1e3a8a 100%);
+  --vibrant-blue: #3b82f6;
+  --vibrant-blue-light: #60a5fa;
+  --vibrant-blue-dark: #2563eb;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  --coral: #3bb3a4;
+  --coral-light: #a7ffeb;
+  --coral-dark: #3bb3a4;
 }
 
 @layer base {
@@ -426,5 +440,66 @@
   .dark .glass {
     background: rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Custom vibrant blue utilities */
+  .text-vibrant-blue {
+    color: var(--vibrant-blue);
+  }
+
+  .bg-vibrant-blue {
+    background-color: var(--vibrant-blue);
+  }
+
+  .bg-vibrant-blue-light {
+    background-color: var(--vibrant-blue-light);
+  }
+
+  .bg-vibrant-blue-dark {
+    background-color: var(--vibrant-blue-dark);
+  }
+
+  .border-vibrant-blue {
+    border-color: var(--vibrant-blue);
+  }
+
+  .hover\:bg-vibrant-blue:hover {
+    background-color: var(--vibrant-blue);
+  }
+
+  .hover\:text-vibrant-blue:hover {
+    color: var(--vibrant-blue);
+  }
+
+  .text-coral {
+    color: var(--accent);
+  }
+
+  .bg-coral {
+    background-color: var(--accent);
+  }
+
+  .bg-coral-light {
+    background-color: var(--accent-light);
+  }
+
+  .bg-coral-dark {
+    background-color: var(--accent);
+  }
+
+  .border-coral {
+    border-color: var(--accent);
+  }
+
+  .hover\:bg-coral:hover {
+    background-color: var(--accent);
+  }
+
+  .hover\:text-coral:hover {
+    color: var(--accent);
+  }
+
+  .drop-shadow-glow {
+    filter: drop-shadow(0 2px 8px rgba(59, 179, 164, 0.25)) drop-shadow(0 0px 2px rgba(0,0,0,0.12));
   }
 }

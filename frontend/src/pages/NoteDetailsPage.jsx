@@ -76,11 +76,16 @@ const NoteDetailsPage = () => {
         return;
       }
 
+      console.log('Token exists:', !!token);
+      console.log('Token length:', token.length);
+
       // Track the download
       const downloadResponse = await fetch(`${API_BASE_URL}/notes/${noteId}/download`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      console.log('Download tracking response status:', downloadResponse.status);
 
       if (!downloadResponse.ok) {
         if (downloadResponse.status === 401) {
@@ -92,30 +97,45 @@ const NoteDetailsPage = () => {
         console.warn('Failed to track download, but continuing with file download');
       }
 
-      // Download the file
-      if (note && note.fileUrl) {
-        try {
-          // First check if the file is accessible
-          const fileCheck = await fetch(note.fileUrl, { method: 'HEAD' });
+      // Download the file using the authenticated route
+      if (note) {
+        const downloadUrl = `${API_BASE_URL}/notes/${noteId}/download-file`;
+        console.log('Downloading from:', downloadUrl);
+        
+        // Fetch the file with authorization header
+        const response = await fetch(downloadUrl, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        console.log('File download response status:', response.status);
+        
+        if (response.ok) {
+          // Create blob from response
+          const blob = await response.blob();
           
-          if (!fileCheck.ok) {
-            if (fileCheck.status === 401) {
-              alert('This file is currently not accessible. Please contact the uploader or try again later.');
-              return;
-            }
-            throw new Error(`File not accessible: ${fileCheck.status}`);
-          }
-
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
-          link.href = note.fileUrl;
-          link.setAttribute('download', note.title || 'note');
-          link.setAttribute('target', '_blank');
+          link.href = url;
+          link.setAttribute('download', `${note.title || 'note'}.pdf`);
           document.body.appendChild(link);
           link.click();
           link.remove();
-        } catch (fileError) {
-          console.error('File access error:', fileError);
-          alert('Unable to download this file. It may have been removed or is not publicly accessible.');
+          
+          // Clean up the blob URL
+          window.URL.revokeObjectURL(url);
+        } else {
+          const errorText = await response.text();
+          console.error('Download failed with status:', response.status, 'Error:', errorText);
+          
+          if (response.status === 401) {
+            alert('Your session has expired. Please log in again.');
+            localStorage.removeItem('token');
+            navigate('/login');
+            return;
+          }
+          
+          throw new Error(`Failed to download file: ${response.status}`);
         }
       }
 
@@ -312,8 +332,8 @@ const NoteDetailsPage = () => {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
+                              <div className="mt-4 p-4 bg-accent-light/20 dark:bg-accent/30 rounded-lg border border-accent/30 dark:border-accent/50">
+                  <p className="text-sm text-accent dark:text-accent-light">
                   💡 <strong>Tip:</strong> Click the download button above to save and view this file on your device.
                 </p>
               </div>

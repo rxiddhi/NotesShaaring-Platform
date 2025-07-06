@@ -30,49 +30,49 @@ const features = [
     title: "Smart Search", 
     desc: "Find notes instantly with AI-powered search that understands context and content.", 
     icon: Search, 
-    color: "text-blue-500", 
-    bg: "bg-blue-50 dark:bg-blue-900/20",
-    gradient: "from-blue-500 to-blue-600"
+    color: "text-accent",
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-[#ffb3a7] to-[#ff6f61]"
   },
   { 
     title: "Organize Everything", 
     desc: "Keep your notes organized with tags, folders, and intelligent categorization.", 
     icon: Filter, 
-    color: "text-green-500", 
-    bg: "bg-green-50 dark:bg-green-900/20",
-    gradient: "from-green-500 to-green-600"
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
   },
   { 
     title: "Collaborate Seamlessly", 
     desc: "Share notes with classmates and work together in real-time.", 
     icon: Users, 
-    color: "text-purple-500", 
-    bg: "bg-purple-50 dark:bg-purple-900/20",
-    gradient: "from-purple-500 to-purple-600"
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
   },
   { 
     title: "Access Anywhere", 
     desc: "Your notes sync across all devices, available offline when you need them.", 
     icon: Cloud, 
-    color: "text-orange-500", 
-    bg: "bg-orange-50 dark:bg-orange-900/20",
-    gradient: "from-orange-500 to-orange-600"
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
   },
   { 
     title: "Secure & Private", 
     desc: "Your data is encrypted and secure, with complete control over your privacy.", 
     icon: Shield, 
-    color: "text-red-500", 
-    bg: "bg-red-50 dark:bg-red-900/20",
-    gradient: "from-red-500 to-red-600"
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
   },
   { 
     title: "Mobile First", 
     desc: "Optimized for mobile devices with a native app-like experience.", 
     icon: Smartphone, 
-    color: "text-indigo-500", 
-    bg: "bg-indigo-50 dark:bg-indigo-900/20",
-    gradient: "from-indigo-500 to-indigo-600"
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
   },
 ];
 
@@ -108,31 +108,10 @@ const steps = [
 ];
 
 const stats = [
-  { label: 'Active Users', value: '10,000+', icon: Users, color: 'text-blue-500' },
-  { label: 'Notes Shared', value: '50,000+', icon: BookOpen, color: 'text-green-500' },
-  { label: 'Daily Downloads', value: '5,000+', icon: Download, color: 'text-purple-500' },
-  { label: 'Average Rating', value: '4.8/5', icon: Star, color: 'text-yellow-500' },
-];
-
-const testimonials = [
-  {
-    name: "Sarah Chen",
-    role: "Computer Science Student",
-    content: "NoteNest has completely transformed how I study. The search is incredible and I can find exactly what I need in seconds.",
-    avatar: "SC"
-  },
-  {
-    name: "Marcus Rodriguez",
-    role: "Engineering Student",
-    content: "The collaboration features are amazing. My study group shares notes seamlessly and we're all on the same page.",
-    avatar: "MR"
-  },
-  {
-    name: "Emily Watson",
-    role: "Medical Student",
-    content: "I love how organized everything is. The tagging system helps me find my notes instantly, even with thousands of files.",
-    avatar: "EW"
-  }
+        { label: 'Active Users', value: '10,000+', icon: Users, color: 'text-accent' },
+  { label: 'Notes Shared', value: '50,000+', icon: BookOpen, color: 'text-accent' },
+  { label: 'Daily Downloads', value: '5,000+', icon: Download, color: 'text-accent' },
+  { label: 'Average Rating', value: '4.8/5', icon: Star, color: 'text-accent' },
 ];
 
 const typingWords = [
@@ -175,22 +154,12 @@ function TypingWord() {
   }, [displayed, typing, wordIndex]);
 
   return (
-    <span className="text-primary"> {displayed}<span className="blinking-cursor">|</span> </span>
+    <span className="text-accent"> {displayed}<span className="blinking-cursor">|</span> </span>
   );
 }
 
 export default function HomePage() {
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
+  const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('token');
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Hero Section */}
@@ -226,14 +195,16 @@ export default function HomePage() {
                 Start Browsing
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link 
-                to="/signup" 
-                className="group border-2 border-border text-foreground px-8 py-4 rounded-xl font-semibold text-lg hover:bg-accent transition-all duration-300 hover-scale inline-flex items-center gap-3"
-              >
-                <Upload className="w-5 h-5" />
-                Get Started Free
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              {!isLoggedIn && (
+                <Link 
+                  to="/signup" 
+                  className="group border-2 border-border text-foreground px-8 py-4 rounded-xl font-semibold text-lg hover:bg-accent transition-all duration-300 hover-scale inline-flex items-center gap-3"
+                >
+                  <Upload className="w-5 h-5" />
+                  Get Started Free
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
             </div>
           </div>
           
@@ -261,7 +232,7 @@ export default function HomePage() {
           <div className="text-center mb-16 animate-slide-up">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Everything you need to
-              <span className="text-primary"> succeed</span>
+              <span className="text-accent"> succeed</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Powerful features designed to help you capture, organize, and access your knowledge effortlessly.
@@ -292,7 +263,7 @@ export default function HomePage() {
           <div className="text-center mb-16 animate-slide-up">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Get started in
-              <span className="text-primary"> minutes</span>
+              <span className="text-accent"> minutes</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Simple steps to transform how you learn and share knowledge.
@@ -330,87 +301,39 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16 animate-slide-up">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Loved by students
-              <span className="text-primary"> worldwide</span>
+      {/* CTA Section */}
+      {!isLoggedIn && (
+        <section className="py-20 px-4 bg-gradient-primary relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full animate-float"></div>
+          <div className="absolute bottom-10 right-10 w-24 h-24 bg-white/10 rounded-full animate-float" style={{ animationDelay: '3s' }}></div>
+          <div className="relative max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Ready to transform your learning?
             </h2>
-            <p className="text-xl text-muted-foreground">
-              See what our community has to say about their experience.
+            <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+              Join thousands of students who are already achieving more with NoteNest.
             </p>
-          </div>
-          
-          <div className="relative">
-            <div className="card-interactive p-8 md:p-12 text-center">
-              <div className="flex justify-center mb-8">
-                {testimonials.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-3 h-3 rounded-full mx-1 transition-all duration-300 ${
-                      index === currentTestimonial ? 'bg-primary' : 'bg-muted'
-                    }`}
-                  />
-                ))}
-              </div>
-              
-              <div className="mb-8">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-white font-bold text-xl">
-                    {testimonials[currentTestimonial].avatar}
-                  </span>
-                </div>
-                <p className="text-lg md:text-xl text-muted-foreground italic mb-6 leading-relaxed">
-                  "{testimonials[currentTestimonial].content}"
-                </p>
-                <div>
-                  <div className="font-semibold text-foreground text-lg">
-                    {testimonials[currentTestimonial].name}
-                  </div>
-                  <div className="text-muted-foreground">
-                    {testimonials[currentTestimonial].role}
-                  </div>
-                </div>
-              </div>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link
+                to="/signup"
+                className="bg-white text-primary px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-300 hover-scale btn-animated inline-flex items-center gap-3"
+              >
+                <CheckCircle className="w-5 h-5" />
+                Start Free Today
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                to="/browse"
+                className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-primary transition-all duration-300 hover-scale inline-flex items-center gap-3"
+              >
+                <Play className="w-5 h-5" />
+                See How It Works
+              </Link>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full animate-float"></div>
-        <div className="absolute bottom-10 right-10 w-24 h-24 bg-white/10 rounded-full animate-float" style={{ animationDelay: '3s' }}></div>
-        
-        <div className="relative max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to transform your learning?
-          </h2>
-          <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-            Join thousands of students who are already achieving more with NoteNest.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              to="/signup"
-              className="bg-white text-primary px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-300 hover-scale btn-animated inline-flex items-center gap-3"
-            >
-              <CheckCircle className="w-5 h-5" />
-              Start Free Today
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link
-              to="/browse"
-              className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-primary transition-all duration-300 hover-scale inline-flex items-center gap-3"
-            >
-              <Play className="w-5 h-5" />
-              See How It Works
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

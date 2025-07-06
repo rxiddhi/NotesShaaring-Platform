@@ -235,15 +235,15 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="card-interactive p-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
-                <Upload className="w-6 h-6 text-blue-500" />
+              <div className="w-12 h-12 bg-accent-light/20 dark:bg-accent/30 rounded-xl flex items-center justify-center">
+                <Upload className="w-6 h-6 text-accent" />
               </div>
               <TrendingUp className="w-5 h-5 text-green-500" />
             </div>
             <h3 className="text-2xl font-bold text-foreground mb-1">
               {stats?.stats?.uploadedNotes || 0}
             </h3>
-            <p className="text-muted-foreground text-sm">Notes Uploaded</p>
+            <p className="text-base font-semibold text-muted-foreground">Notes Uploaded</p>
             <p className="text-xs text-green-500 mt-1">
               +{stats?.stats?.uploadedThisMonth || 0} this month
             </p>
@@ -259,7 +259,7 @@ export default function Dashboard() {
             <h3 className="text-2xl font-bold text-foreground mb-1">
               {stats?.stats?.downloadedNotes || 0}
             </h3>
-            <p className="text-muted-foreground text-sm">Notes Downloaded</p>
+            <p className="text-base font-semibold text-muted-foreground">Notes Downloaded</p>
             <p className="text-xs text-green-500 mt-1">
               +{stats?.stats?.downloadedThisMonth || 0} this month
             </p>
@@ -275,7 +275,7 @@ export default function Dashboard() {
             <h3 className="text-2xl font-bold text-foreground mb-1">
               {stats?.stats?.reviewsReceived || 0}
             </h3>
-            <p className="text-muted-foreground text-sm">Reviews Received</p>
+            <p className="text-base font-semibold text-muted-foreground">Reviews Received</p>
             <p className="text-xs text-green-500 mt-1">
               +{stats?.stats?.reviewsThisMonth || 0} this month
             </p>
@@ -293,7 +293,7 @@ export default function Dashboard() {
                 ? stats.stats.averageRating.toFixed(1)
                 : 'No ratings yet'}
             </h3>
-            <p className="text-muted-foreground text-sm">Average Rating</p>
+            <p className="text-base font-semibold text-muted-foreground">Average Rating</p>
             <p className="text-xs text-green-500 mt-1">out of 5 stars</p>
           </div>
         </div>
@@ -323,8 +323,8 @@ export default function Dashboard() {
             style={{ animationDelay: '600ms' }}
           >
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Eye className="w-6 h-6 text-blue-500" />
+              <div className="w-12 h-12 bg-accent-light/20 dark:bg-accent/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Eye className="w-6 h-6 text-accent" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-foreground mb-1">Browse Notes</h3>

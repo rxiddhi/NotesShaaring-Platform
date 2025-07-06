@@ -13,26 +13,14 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "notesSharingFiles",
-    resource_type: "raw",
-    allowed_formats: [
-      "jpg",
-      "jpeg",
-      "png",
-      "webp",
-      "pdf",
-      "doc",
-      "docx",
-      "ppt",
-      "pptx",
-      "txt",
-      "rtf",
-    ],
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    transformation: [{ width: 500, height: 500, crop: "limit" }],
   },
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 module.exports = upload;

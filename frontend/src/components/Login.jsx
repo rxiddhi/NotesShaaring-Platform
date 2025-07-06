@@ -109,9 +109,9 @@ export default function Login() {
         <div className="card-interactive p-8">
           {/* Show message if redirected from protected route */}
           {location.state?.fromProtected && (
-            <div className="flex items-center space-x-3 p-4 bg-blue-100 border border-blue-300 rounded-lg animate-scale-in mb-4">
-              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
-              <span className="text-sm text-blue-700">Please log in to access this page.</span>
+            <div className="flex items-center space-x-3 p-4 bg-accent-light/20 border border-accent/30 rounded-lg animate-scale-in mb-4">
+              <AlertCircle className="w-5 h-5 text-accent flex-shrink-0" />
+              <span className="text-sm text-accent">Please log in to access this page.</span>
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">

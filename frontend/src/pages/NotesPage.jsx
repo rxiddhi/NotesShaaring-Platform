@@ -169,7 +169,7 @@ const NotesPage = () => {
         <div className="flex gap-2 mt-4 flex-wrap">
           <button
             onClick={() => handleDownload(note)}
-            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-3 py-1 text-sm bg-coral text-white rounded hover:bg-coral-dark"
             disabled={downloading === note._id}
           >
             {downloading === note._id ? 'Downloading...' : 'Download'}
@@ -203,7 +203,7 @@ const NotesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#ffb3a7] via-[#ff6f61] to-[#e05a47] p-6">
       <h2 className="text-3xl font-bold mb-8 text-gray-800 text-center">📚 My Notes Dashboard</h2>
 
       {loading ? (
@@ -222,7 +222,7 @@ const NotesPage = () => {
           </section>
 
           <section>
-            <h3 className="text-2xl font-semibold mb-4 text-blue-800">🔵 Downloaded Notes</h3>
+            <h3 className="text-2xl font-semibold mb-4 text-accent">🔵 Downloaded Notes</h3>
             {downloadedNotes.length === 0 ? (
               <p className="text-gray-600">You haven't downloaded any notes yet.</p>
             ) : (
