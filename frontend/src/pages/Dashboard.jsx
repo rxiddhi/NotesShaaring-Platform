@@ -17,7 +17,8 @@ import {
   AlertCircle,
   Pencil,
   X,
-  Heart
+  Heart,
+  CheckCircle
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -172,30 +173,11 @@ export default function Dashboard() {
               }
             }}
           >
-            <div className="bg-card p-8 rounded-xl shadow-xl w-full max-w-md relative animate-scale-in max-h-[90vh] overflow-y-auto">
-              <button
-                onClick={() => setShowEditProfile(false)}
-                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors z-10"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <h2 className="text-2xl font-bold mb-6 text-foreground flex items-center gap-2 pr-8">
-                <Pencil className="w-5 h-5 text-primary" /> Edit Profile
-              </h2>
-              {/* Profile edit form placeholder */}
-              <div className="space-y-4">
-                <div className="bg-accent p-4 rounded-lg text-muted-foreground text-center">
-                  Profile editing coming soon!
-                </div>
-                <button
-                  onClick={() => setShowEditProfile(false)}
-                  className="w-full bg-gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
+            <EditProfileModal 
+              user={stats?.user} 
+              onClose={() => setShowEditProfile(false)} 
+              onProfileUpdated={fetchDashboardData}
+            />
           </div>
         )}
 
@@ -233,7 +215,7 @@ export default function Dashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="card-interactive p-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <div className="card-interactive p-6 animate-slide-up" style={{ animationDelay: '100ms', borderTop: '7px solid var(--accent)' }}>
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-accent-light/20 dark:bg-accent/30 rounded-xl flex items-center justify-center">
                 <Upload className="w-6 h-6 text-accent" />
@@ -249,7 +231,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="card-interactive p-6 animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <div className="card-interactive p-6 animate-slide-up" style={{ animationDelay: '200ms', borderTop: '7px solid var(--accent)' }}>
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
                 <Download className="w-6 h-6 text-green-500" />
@@ -265,7 +247,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="card-interactive p-6 animate-slide-up" style={{ animationDelay: '300ms' }}>
+          <div className="card-interactive p-6 animate-slide-up" style={{ animationDelay: '300ms', borderTop: '7px solid var(--accent)' }}>
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
                 <Star className="w-6 h-6 text-purple-500" />
@@ -281,7 +263,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="card-interactive p-6 animate-slide-up" style={{ animationDelay: '400ms' }}>
+          <div className="card-interactive p-6 animate-slide-up" style={{ animationDelay: '400ms', borderTop: '7px solid var(--accent)' }}>
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-orange-500" />
@@ -303,7 +285,7 @@ export default function Dashboard() {
           <Link 
             to="/upload" 
             className="card-interactive p-6 group hover-lift animate-slide-up"
-            style={{ animationDelay: '500ms' }}
+            style={{ animationDelay: '500ms', borderTop: '7px solid var(--accent)' }}
           >
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -320,7 +302,7 @@ export default function Dashboard() {
           <Link 
             to="/browse" 
             className="card-interactive p-6 group hover-lift animate-slide-up"
-            style={{ animationDelay: '600ms' }}
+            style={{ animationDelay: '600ms', borderTop: '7px solid var(--accent)' }}
           >
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-accent-light/20 dark:bg-accent/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -337,7 +319,7 @@ export default function Dashboard() {
           <Link 
             to="/doubts" 
             className="card-interactive p-6 group hover-lift animate-slide-up"
-            style={{ animationDelay: '700ms' }}
+            style={{ animationDelay: '700ms', borderTop: '7px solid var(--accent)' }}
           >
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -390,7 +372,7 @@ export default function Dashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recentNotes.map((note) => (
-                <div key={note._id} className="card-interactive p-6 group hover-lift">
+                <div key={note._id} className="card-interactive p-6 group hover-lift" style={{ borderTop: '7px solid var(--accent)' }}>
                   <div className="flex items-start justify-between mb-4">
                     <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full">
                       {note.subject}
@@ -435,6 +417,133 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function EditProfileModal({ user, onClose, onProfileUpdated }) {
+  const [bio, setBio] = useState(user?.bio || "");
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(user?.imageUrl || "");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please log in to update profile");
+        setLoading(false);
+        return;
+      }
+      const formData = new FormData();
+      formData.append("bio", bio);
+      if (image) formData.append("image", image);
+      const response = await fetch("http://localhost:3000/api/users/update-profile", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSuccess("Profile updated successfully!");
+        onProfileUpdated && onProfileUpdated();
+        setTimeout(() => {
+          setSuccess("");
+          onClose();
+        }, 1200);
+      } else {
+        setError(data.message || "Failed to update profile");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-card p-8 rounded-xl shadow-xl w-full max-w-md relative animate-scale-in max-h-[90vh] overflow-y-auto">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors z-10"
+        aria-label="Close"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <h2 className="text-2xl font-bold mb-6 text-foreground flex items-center gap-2 pr-8">
+        <Pencil className="w-5 h-5 text-primary" /> Edit Profile
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex flex-col items-center gap-4">
+          <label htmlFor="profile-image" className="cursor-pointer relative group">
+            {preview ? (
+              <img
+                src={preview}
+                alt="Profile Preview"
+                className="w-20 h-20 rounded-full object-cover border-2 border-primary shadow"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center border-2 border-primary shadow">
+                <User className="w-8 h-8 text-white" />
+              </div>
+            )}
+            <span className="absolute bottom-0 right-0 p-1 bg-background border border-border rounded-full shadow hover:bg-accent transition-colors">
+              <Upload className="w-4 h-4 text-primary" />
+            </span>
+            <input
+              id="profile-image"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+          </label>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">Bio</label>
+          <textarea
+            value={bio}
+            onChange={e => setBio(e.target.value)}
+            rows={4}
+            placeholder="Tell us about yourself..."
+            className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none"
+          />
+        </div>
+        {error && (
+          <div className="flex items-center space-x-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+            <p className="text-destructive text-sm">{error}</p>
+          </div>
+        )}
+        {success && (
+          <div className="flex items-center space-x-2 p-3 bg-green-100 border border-green-300 rounded-lg">
+            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+            <p className="text-green-700 text-sm">{success}</p>
+          </div>
+        )}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-gradient-primary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {loading ? <Loader className="w-5 h-5 animate-spin" /> : <Pencil className="w-5 h-5" />}
+          {loading ? "Saving..." : "Save Changes"}
+        </button>
+      </form>
     </div>
   );
 }

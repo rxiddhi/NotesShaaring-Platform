@@ -187,6 +187,8 @@ router.get("/dashboard-stats", authMiddleware, async (req, res) => {
       user: {
         username: user.username || user.name || "User",
         joinDate: user.createdAt,
+        bio: user.bio || "",
+        imageUrl: user.imageUrl || "",
       },
       stats: {
         uploadedNotes,
@@ -269,6 +271,30 @@ router.post("/reset-password/:token", async (req, res) => {
   } catch (err) {
     console.error("Reset password error:", err);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Public stats endpoint for homepage
+router.get("/public-stats", async (req, res) => {
+  try {
+    const [userCount, noteCount, reviews] = await Promise.all([
+      require("../models/User").countDocuments(),
+      require("../models/Note").countDocuments(),
+      require("../models/Review").find({}, "rating")
+    ]);
+    let avgRating = 0;
+    if (reviews.length > 0) {
+      avgRating = (
+        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+      ).toFixed(2);
+    }
+    res.json({
+      userCount,
+      noteCount,
+      avgRating: Number(avgRating)
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch stats" });
   }
 });
 

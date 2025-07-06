@@ -10,7 +10,7 @@ exports.updateProfile = async (req, res) => {
 
     const { bio } = req.body;
     if (bio !== undefined) user.bio = bio;
-    if (req.file) user.imageUrl = req.file.path || req.file.secure_url;
+    if (req.file) user.imageUrl = req.file.secure_url || req.file.url || req.file.path;
 
     await user.save();
 

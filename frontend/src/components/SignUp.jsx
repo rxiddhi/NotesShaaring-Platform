@@ -281,27 +281,6 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* Terms and Conditions */}
-            <div className="flex items-start space-x-3">
-              <input
-                id="terms"
-                name="terms"
-                type="checkbox"
-                required
-                className="h-4 w-4 text-primary focus:ring-primary border-border rounded mt-1"
-              />
-              <label htmlFor="terms" className="text-sm text-muted-foreground">
-                I agree to the{' '}
-                <Link to="/terms" className="text-primary hover:text-primary/80 transition-colors">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link to="/privacy" className="text-primary hover:text-primary/80 transition-colors">
-                  Privacy Policy
-                </Link>
-              </label>
-            </div>
-
             {/* Submit Button */}
             <button
               type="submit"

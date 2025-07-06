@@ -3,9 +3,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import ReviewList from '../components/Reviews/ReviewList';
 
-const API_BASE_URL = import.meta.env.MODE === "production"
-  ? "https://notenest-lzm0.onrender.com/api"
-  : "http://localhost:3000/api";
+const API_BASE_URL = "http://localhost:3000/api";
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
@@ -22,21 +20,29 @@ const NotesPage = () => {
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState("");
   const [editFile, setEditFile] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
-  const token = localStorage.getItem('token');
-  let currentUserId = null;
+  console.log('NotesPage mounted');
+  console.log('API_BASE_URL:', "http://localhost:3000/api");
 
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      currentUserId = decoded.userId || decoded.id;
-    } catch {
-      currentUserId = null;
+  useEffect(() => {
+    // Always decode user from token on mount
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setCurrentUserId(decoded.userId || decoded.id);
+      } catch {
+        setCurrentUserId(null);
+      }
+    } else {
+      setCurrentUserId(null);
     }
-  }
+  }, []);
 
   const fetchNotes = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(`${API_BASE_URL}/notes`);
       setNotes(res.data.notes);
     } catch (err) {
@@ -60,31 +66,42 @@ const NotesPage = () => {
     }
   }, [editModalOpen, noteToEdit]);
 
-  const uploadedNotes = notes.filter(note => {
-    if (!note.uploadedBy) return false;
-    const uploaderId = typeof note.uploadedBy === 'object' ? note.uploadedBy._id : note.uploadedBy;
-    return uploaderId === currentUserId;
-  });
+  // Only filter notes after currentUserId is set
+  const uploadedNotes = currentUserId
+    ? notes.filter(note => {
+        if (!note.uploadedBy) return false;
+        const uploaderId = typeof note.uploadedBy === 'object' ? note.uploadedBy._id : note.uploadedBy;
+        return String(uploaderId) === String(currentUserId);
+      })
+    : [];
 
-  const downloadedNotes = notes.filter(note => {
-    if (!Array.isArray(note.downloadedBy)) return false;
-    return note.downloadedBy.some(user =>
-      user && (typeof user === 'object' ? user._id === currentUserId : user === currentUserId)
-    );
-  });
+  const downloadedNotes = currentUserId
+    ? notes.filter(note => {
+        if (!Array.isArray(note.downloadedBy)) return false;
+        return note.downloadedBy.some(user => {
+          const userId = typeof user === 'object' ? user._id : user;
+          return String(userId) === String(currentUserId);
+        });
+      })
+    : [];
+
+  // Debug logs
+  console.log('currentUserId:', currentUserId);
+  console.log('notes:', notes);
+  console.log('uploadedNotes:', uploadedNotes);
+  console.log('downloadedNotes:', downloadedNotes);
 
   const handleDownload = async (note) => {
+    const token = localStorage.getItem('token');
     if (!token || !currentUserId) {
       alert("Please log in to download notes.");
       return;
     }
-
     setDownloading(note._id);
     try {
       await axios.put(`${API_BASE_URL}/notes/${note._id}/download`, {}, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       const response = await axios.get(note.fileUrl, { responseType: 'blob' });
       const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
@@ -96,8 +113,7 @@ const NotesPage = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-
-      fetchNotes();
+      await fetchNotes(); // Refresh notes after download
     } catch (err) {
       alert('Download failed.');
       console.error(err);
@@ -110,10 +126,11 @@ const NotesPage = () => {
     if (!window.confirm('Are you sure you want to delete this note?')) return;
     setDeleting(noteId);
     try {
+      const token = localStorage.getItem('token');
       await axios.delete(`${API_BASE_URL}/notes/${noteId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setNotes(notes.filter(note => note._id !== noteId));
+      await fetchNotes(); // Refresh notes after delete
     } catch (err) {
       alert(err.response?.data?.message || 'Delete failed.');
     } finally {
@@ -128,6 +145,7 @@ const NotesPage = () => {
     try {
       let data;
       let headers;
+      const token = localStorage.getItem('token');
       if (editFile) {
         data = new FormData();
         data.append("title", editTitle);
@@ -139,13 +157,12 @@ const NotesPage = () => {
         data = { title: editTitle, subject: editSubject, description: editDescription };
         headers = { Authorization: `Bearer ${token}` };
       }
-
       await axios.patch(`${API_BASE_URL}/notes/${noteToEdit._id}`, data, {
         headers: editFile ? { ...headers, "Content-Type": "multipart/form-data" } : headers,
       });
       setEditModalOpen(false);
       setNoteToEdit(null);
-      fetchNotes();
+      await fetchNotes(); // Refresh notes after edit
     } catch (err) {
       setEditError(err.response?.data?.message || "Failed to update note.");
     } finally {

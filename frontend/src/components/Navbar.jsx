@@ -12,8 +12,7 @@ import {
   Settings,
   Search,
   Plus,
-  MessageCircle,
-  Pencil
+  MessageCircle
 } from 'lucide-react';
 import '../styles/Navbar.css';
 
@@ -22,7 +21,6 @@ export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const [showEditProfile, setShowEditProfile] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -51,12 +49,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 theme-transition" style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-      backdropFilter: 'blur(10px)'
-    }}>
+    <nav className="sticky top-0 z-50 theme-transition navbar-gradient border-b border-primary/20 shadow-lg backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -65,16 +58,16 @@ export default function Navbar() {
             className="flex items-center space-x-3 group hover-scale"
           >
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+              <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full animate-pulse"></div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-light rounded-full animate-pulse"></div>
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold text-white">
                 NoteNest
               </span>
-              <span className="text-xs text-gray-200 -mt-1">Share Knowledge</span>
+              <span className="text-xs text-white/80 -mt-1">Share Knowledge</span>
             </div>
           </Link>
 
@@ -124,9 +117,9 @@ export default function Navbar() {
               aria-label="Toggle theme"
             >
               {isDark ? (
-                <Sun className="w-5 h-5 text-white group-hover:text-yellow-300 transition-colors" />
+                <Sun className="w-5 h-5 text-white group-hover:text-accent-light transition-colors" />
               ) : (
-                <Moon className="w-5 h-5 text-white group-hover:text-yellow-300 transition-colors" />
+                <Moon className="w-5 h-5 text-white group-hover:text-accent-light transition-colors" />
               )}
             </button>
 
@@ -137,26 +130,19 @@ export default function Navbar() {
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="flex items-center space-x-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 hover-scale border border-white/20"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent-dark rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <span className="hidden sm:block text-sm font-medium text-white">Account</span>
                 </button>
-                <button
-                  onClick={() => setShowEditProfile(true)}
-                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 hover-scale border border-white/20"
-                  aria-label="Edit profile"
-                >
-                  <Pencil className="w-4 h-4 text-white" />
-                </button>
                 {/* Dropdown Menu */}
                 {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md border border-white/20 rounded-xl shadow-lg animate-scale-in">
+                  <div className="absolute right-6 mt-2 w-48 max-w-xs bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-lg animate-scale-in">
                     <div className="py-2">
                       <Link
                         to="/dashboard"
                         onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                        className="flex items-center space-x-3 px-4 py-2 text-sm text-card-foreground hover:bg-accent/10 transition-colors"
                       >
                         <Settings className="w-4 h-4" />
                         <span>Dashboard</span>
@@ -164,54 +150,18 @@ export default function Navbar() {
                       <Link
                         to="/history"
                         onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                        className="flex items-center space-x-3 px-4 py-2 text-sm text-card-foreground hover:bg-accent/10 transition-colors"
                       >
                         <BookOpen className="w-4 h-4" />
                         <span>Notes</span>
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full"
+                        className="flex items-center space-x-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors w-full"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Logout</span>
                       </button>
-                    </div>
-                  </div>
-                )}
-                {/* Edit Profile Modal */}
-                {showEditProfile && (
-                  <div 
-                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
-                    onClick={(e) => {
-                      if (e.target === e.currentTarget) {
-                        setShowEditProfile(false);
-                      }
-                    }}
-                  >
-                    <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-md relative animate-scale-in max-h-[90vh] overflow-y-auto">
-                      <button
-                        onClick={() => setShowEditProfile(false)}
-                        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-10"
-                        aria-label="Close"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                      <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2 pr-8">
-                        <Pencil className="w-5 h-5 text-blue-600" /> Edit Profile
-                      </h2>
-                      {/* Profile edit form placeholder */}
-                      <div className="space-y-4">
-                        <div className="bg-gray-50 p-4 rounded-lg text-gray-600 text-center">
-                          Profile editing coming soon!
-                        </div>
-                        <button
-                          onClick={() => setShowEditProfile(false)}
-                          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200"
-                        >
-                          Close
-                        </button>
-                      </div>
                     </div>
                   </div>
                 )}
@@ -226,7 +176,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated"
+                  className="bg-gradient-to-r from-accent to-accent-dark text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated"
                 >
                   Get Started
                 </Link>

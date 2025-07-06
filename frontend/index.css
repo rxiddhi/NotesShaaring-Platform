@@ -43,7 +43,7 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #ffffff;
+  --background: linear-gradient(135deg, #f8fafc 0%, #eafff8 50%, #e2e8f0 100%);
   --foreground: #1a1a1a;
   --card: #ffffff;
   --card-foreground: #1a1a1a;
@@ -142,9 +142,12 @@
   }
   
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply text-foreground font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     transition: background-color 0.3s ease, color 0.3s ease;
+    background: var(--background);
+    min-height: 100vh;
+    background-attachment: fixed;
   }
   
   /* Custom scrollbar */
@@ -500,6 +503,18 @@
   }
 
   .drop-shadow-glow {
-    filter: drop-shadow(0 2px 8px rgba(59, 179, 164, 0.25)) drop-shadow(0 0px 2px rgba(0,0,0,0.12));
+    filter: drop-shadow(0 0 20px rgba(59, 179, 164, 0.3));
+  }
+
+  /* Navbar gradient animation */
+  .navbar-gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--chart-2) 25%, var(--accent) 50%, var(--chart-3) 75%, var(--primary) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease-in-out infinite;
+  }
+
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
   }
 }

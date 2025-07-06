@@ -21,6 +21,7 @@ const NotesHistory = () => {
   const navigate = useNavigate();
   const [uploadedNotes, setUploadedNotes] = useState([]);
   const [downloadedNotes, setDownloadedNotes] = useState([]);
+  const [allNotes, setAllNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
@@ -44,7 +45,7 @@ const NotesHistory = () => {
       
       if (response.ok) {
         const userData = await response.json();
-        setCurrentUser(userData);
+        setCurrentUser(userData.user || userData);
       }
     } catch (error) {
       console.error('Error fetching current user:', error);
@@ -67,25 +68,8 @@ const NotesHistory = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      const allNotes = response.data.notes || [];
-      
-      // Filter uploaded notes (notes created by current user)
-      const userUploadedNotes = allNotes.filter(note => {
-        const userId = typeof note.uploadedBy === 'object' ? note.uploadedBy._id : note.uploadedBy;
-        return userId === (currentUser?.userId || currentUser?._id);
-      });
-
-      // Filter downloaded notes (notes downloaded by current user)
-      const userDownloadedNotes = allNotes.filter(note => {
-        if (!Array.isArray(note.downloadedBy)) return false;
-        return note.downloadedBy.some(user => {
-          const userId = typeof user === 'object' ? user._id : user;
-          return userId === (currentUser?.userId || currentUser?._id);
-        });
-      });
-
-      setUploadedNotes(userUploadedNotes);
-      setDownloadedNotes(userDownloadedNotes);
+      const notes = response.data.notes || [];
+      setAllNotes(notes);
     } catch (error) {
       console.error('Error fetching notes:', error);
       setError('Failed to load notes. Please try again.');
@@ -93,6 +77,25 @@ const NotesHistory = () => {
       setLoading(false);
     }
   };
+
+  // Only filter after both allNotes and currentUser are loaded
+  useEffect(() => {
+    if (!currentUser || !Array.isArray(allNotes)) return;
+    const userId = String(currentUser.userId || currentUser._id);
+    const userUploadedNotes = allNotes.filter(note => {
+      const uploaderId = typeof note.uploadedBy === 'object' ? note.uploadedBy._id : note.uploadedBy;
+      return String(uploaderId) === userId;
+    });
+    const userDownloadedNotes = allNotes.filter(note => {
+      if (!Array.isArray(note.downloadedBy)) return false;
+      return note.downloadedBy.some(user => {
+        const dId = typeof user === 'object' ? user._id : user;
+        return String(dId) === userId;
+      });
+    });
+    setUploadedNotes(userUploadedNotes);
+    setDownloadedNotes(userDownloadedNotes);
+  }, [allNotes, currentUser]);
 
   const handleDownload = async (noteId) => {
     try {
@@ -243,7 +246,7 @@ const NotesHistory = () => {
                   <div 
                     key={note._id} 
                     className="card-interactive p-6 group animate-slide-up hover-lift"
-                    style={{ animationDelay: `${300 + index * 50}ms` }}
+                    style={{ animationDelay: `${300 + index * 50}ms`, borderTop: '7px solid var(--accent)' }}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
@@ -343,7 +346,7 @@ const NotesHistory = () => {
                   <div 
                     key={note._id} 
                     className="card-interactive p-6 group animate-slide-up hover-lift"
-                    style={{ animationDelay: `${350 + index * 50}ms` }}
+                    style={{ animationDelay: `${350 + index * 50}ms`, borderTop: '7px solid var(--accent)' }}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <span className="px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full">

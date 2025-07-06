@@ -393,7 +393,7 @@ const NotesBrowsingPage = () => {
                 <div 
                   key={note._id} 
                   className="card-interactive p-6 group animate-slide-up hover-lift"
-                  style={{ animationDelay: `${300 + index * 50}ms` }}
+                  style={{ animationDelay: `${300 + index * 50}ms`, borderTop: '7px solid var(--accent)' }}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full">

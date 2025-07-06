@@ -16,11 +16,14 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
         .json({ message: "File, title, and subject are required" });
     }
 
+    // Use Cloudinary URL if available, otherwise fallback to local path
+    const fileUrl = req.file.secure_url || req.file.url || req.file.path;
+
     const newNote = new Note({
       title,
       subject,
       description,
-      fileUrl: req.file.path,
+      fileUrl,
       uploadedBy: req.user.userId,
       downloadedBy: [],
       downloadCount: 0,
@@ -43,7 +46,8 @@ router.get("/", async (req, res) => {
   try {
     const notes = await Note.find()
       .sort({ createdAt: -1 })
-      .populate("uploadedBy", "username email");
+      .populate("uploadedBy", "username email")
+      .populate("downloadedBy", "_id");
 
     const reviewCounts = await Review.aggregate([
       { $group: { _id: "$note", count: { $sum: 1 } } },

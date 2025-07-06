@@ -107,13 +107,6 @@ const steps = [
   }
 ];
 
-const stats = [
-        { label: 'Active Users', value: '10,000+', icon: Users, color: 'text-accent' },
-  { label: 'Notes Shared', value: '50,000+', icon: BookOpen, color: 'text-accent' },
-  { label: 'Daily Downloads', value: '5,000+', icon: Download, color: 'text-accent' },
-  { label: 'Average Rating', value: '4.8/5', icon: Star, color: 'text-accent' },
-];
-
 const typingWords = [
   "achieve",
   "learn",
@@ -160,6 +153,25 @@ function TypingWord() {
 
 export default function HomePage() {
   const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('token');
+
+  // Dynamic stats state
+  const [stats, setStats] = useState({
+    userCount: null,
+    noteCount: null,
+    avgRating: null
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/auth/public-stats")
+      .then(res => res.json())
+      .then(data => {
+        setStats(data);
+        setLoadingStats(false);
+      })
+      .catch(() => setLoadingStats(false));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Hero Section */}
@@ -173,7 +185,9 @@ export default function HomePage() {
           <div className="animate-slide-up">
             <div className="inline-flex items-center space-x-2 bg-accent/50 dark:bg-accent/20 px-4 py-2 rounded-full mb-8 animate-fade-in">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">Join 10,000+ students already learning</span>
+              <span className="text-sm font-medium text-foreground">
+                Join {loadingStats ? '...' : (stats.userCount?.toLocaleString() + '+')} students already learning
+              </span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
@@ -209,19 +223,37 @@ export default function HomePage() {
           </div>
           
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto animate-slide-up" style={{ animationDelay: '300ms' }}>
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div key={index} className="text-center group hover-scale">
-                  <div className={`flex justify-center mb-3 ${stat.color}`}>
-                    <Icon className="w-8 h-8" />
-                  </div>
-                  <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto animate-slide-up" style={{ animationDelay: '300ms' }}>
+            {/* Active Users */}
+            <div className="text-center group hover-scale">
+              <div className="flex justify-center mb-3 text-accent">
+                <Users className="w-8 h-8" />
+              </div>
+              <div className="text-3xl font-bold text-foreground mb-1">
+                {loadingStats ? '...' : stats.userCount?.toLocaleString() + '+'}
+              </div>
+              <div className="text-sm text-muted-foreground">Active Users</div>
+            </div>
+            {/* Notes Shared */}
+            <div className="text-center group hover-scale">
+              <div className="flex justify-center mb-3 text-accent">
+                <BookOpen className="w-8 h-8" />
+              </div>
+              <div className="text-3xl font-bold text-foreground mb-1">
+                {loadingStats ? '...' : stats.noteCount?.toLocaleString() + '+'}
+              </div>
+              <div className="text-sm text-muted-foreground">Notes Shared</div>
+            </div>
+            {/* Average Rating */}
+            <div className="text-center group hover-scale">
+              <div className="flex justify-center mb-3 text-accent">
+                <Star className="w-8 h-8" />
+              </div>
+              <div className="text-3xl font-bold text-foreground mb-1">
+                {loadingStats ? '...' : (stats.avgRating ? stats.avgRating + '/5' : 'N/A')}
+              </div>
+              <div className="text-sm text-muted-foreground">Average Rating</div>
+            </div>
           </div>
         </div>
       </section>
@@ -243,8 +275,8 @@ export default function HomePage() {
             {features.map((feature, index) => (
               <div 
                 key={index} 
-                className="card-interactive p-8 group animate-slide-up"
-                style={{ animationDelay: `${index * 100}ms` }}
+                className="card-interactive p-8 group animate-slide-up rounded-2xl shadow-md bg-white/90 dark:bg-card transition-all duration-300"
+                style={{ animationDelay: `${index * 100}ms`, borderTop: '7px solid var(--accent)' }}
               >
                 <div className={`w-16 h-16 ${feature.bg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                   <feature.icon className={`w-8 h-8 ${feature.color}`} />

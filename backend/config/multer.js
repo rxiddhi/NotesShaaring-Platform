@@ -7,7 +7,7 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => ({
     folder: process.env.CLOUDINARY_UPLOAD_FOLDER || "notes",
-    resource_type: "auto",
+    resource_type: (file.mimetype === "application/pdf" || file.mimetype === "application/msword" || file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || file.mimetype === "application/vnd.ms-powerpoint" || file.mimetype === "application/vnd.openxmlformats-officedocument.presentationml.presentation") ? "raw" : "auto",
     public_id: `${Date.now()}-${path.parse(file.originalname).name}`,
   }),
 });
