@@ -20,7 +20,6 @@ import '../styles/Navbar.css';
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -100,6 +99,13 @@ export default function Navbar() {
                   <MessageCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   <span>Doubts</span>
                 </Link>
+                <Link 
+                  to="/history" 
+                  className="text-foreground hover:text-primary transition-colors duration-200 flex items-center space-x-2 group"
+                >
+                  <BookOpen className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <span>Notes</span>
+                </Link>
               </>
             )}
           </div>
@@ -149,6 +155,14 @@ export default function Navbar() {
                       >
                         <Settings className="w-4 h-4" />
                         <span>Dashboard</span>
+                      </Link>
+                      <Link
+                        to="/history"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center space-x-3 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        <span>Notes</span>
                       </Link>
                       <button
                         onClick={handleLogout}
@@ -258,6 +272,14 @@ export default function Navbar() {
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>Doubts</span>
+                  </Link>
+                  <Link
+                    to="/history"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg text-foreground hover:bg-accent transition-colors"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Notes</span>
                   </Link>
                   <Link
                     to="/dashboard"

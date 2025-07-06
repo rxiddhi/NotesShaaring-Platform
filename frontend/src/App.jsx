@@ -16,6 +16,7 @@ import PublicRoute from './components/PublicRoute';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './pages/ResetPassword'; 
 import DoubtDetailPage from './pages/DoubtDetailPage';
+import NotesHistory from './pages/NotesHistory';
 import Footer from './components/Footer';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
@@ -34,6 +35,7 @@ function App() {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
               <Route path="/notes" element={<PrivateRoute><NotesPage /></PrivateRoute>} />
+              <Route path="/history" element={<PrivateRoute><NotesHistory /></PrivateRoute>} />
               <Route path="/notes/:id" element={<PrivateRoute><NoteDetailsPage /></PrivateRoute>} />
               <Route path="/upload" element={<PrivateRoute><NotesUploadPage /></PrivateRoute>} />
               <Route path="/browse" element={<PrivateRoute><NotesBrowsingPage /></PrivateRoute>} />
