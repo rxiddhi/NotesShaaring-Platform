@@ -147,11 +147,11 @@ export default function DoubtDetailPage() {
     if (!doubt) return <div className="p-8 text-center text-gray-500">Doubt not found.</div>;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 font-sans px-4 py-10">
-            <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 border-t-4 border-indigo-400">
-                <button onClick={() => navigate(-1)} className="mb-4 text-indigo-600 hover:underline">&larr; Back</button>
+        <div className="min-h-screen bg-gradient-to-br from-[#ffb3a7] via-[#ff6f61] to-[#e05a47] font-sans px-4 py-10">
+            <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 border-t-4 border-accent">
+                <button onClick={() => navigate(-1)} className="mb-4 text-accent hover:underline">&larr; Back</button>
                 <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">{doubt.subject}</span>
+                    <span className="inline-block px-3 py-1 bg-accent-light text-accent rounded-full text-xs font-semibold">{doubt.subject}</span>
                 </div>
                 {editingDoubt ? (
                     <div className="flex gap-2 mb-4">
@@ -162,9 +162,9 @@ export default function DoubtDetailPage() {
                     </div>
                 ) : (
                     <>
-                        <h2 className="text-3xl font-bold text-purple-700 mb-2">{doubt.title}</h2>
+                        <h2 className="text-3xl font-bold text-accent mb-2">{doubt.title}</h2>
                         <p className="text-sm text-gray-500 mb-4 flex flex-wrap gap-2 items-center">
-                            By <span className="font-semibold text-indigo-600">{doubt.userId?.name || doubt.userId?.username || doubt.userId?.email || 'User'}</span> on {new Date(doubt.timestamp).toLocaleDateString()} <span className="text-gray-400">at {new Date(doubt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            By <span className="font-semibold text-accent">{doubt.userId?.name || doubt.userId?.username || doubt.userId?.email || 'User'}</span> on {new Date(doubt.timestamp).toLocaleDateString()} <span className="text-gray-400">at {new Date(doubt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </p>
                         {currentUserId && doubt.userId && doubt.userId._id === currentUserId && (
                             <div className="flex gap-2 mb-4">
@@ -185,7 +185,7 @@ export default function DoubtDetailPage() {
                             {doubt.answers.map((ans, idx) => (
                                 <li key={ans._id || idx} className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
                                     <div className="flex justify-between items-center mb-1">
-                                        <span className="font-medium text-indigo-700">{ans.author?.name || ans.author?.username || ans.author?.email || 'User'}</span>
+                                        <span className="font-medium text-accent-700">{ans.author?.name || ans.author?.username || ans.author?.email || 'User'}</span>
                                         <span className="text-xs text-gray-400">{ans.time ? ans.time : ''}</span>
                                     </div>
                                     {editingAnswerId === ans._id ? (
@@ -218,12 +218,12 @@ export default function DoubtDetailPage() {
                             placeholder="Add your answer..."
                             value={answer}
                             onChange={(e) => setAnswer(e.target.value)}
-                            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
+                            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm"
                             disabled={posting}
                         />
                         <button
                             onClick={handlePostAnswer}
-                            className="px-4 py-2 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-600 text-sm"
+                            className="px-4 py-2 bg-accent text-white rounded-lg font-semibold hover:bg-accent-dark text-sm"
                             disabled={posting}
                         >
                             {posting ? 'Posting...' : 'Answer'}

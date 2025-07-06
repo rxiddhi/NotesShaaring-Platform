@@ -1,161 +1,339 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from './Navbar';
-import { UserPlus, Upload, Search, Download, Eye, Heart, List, Filter } from 'lucide-react';
+import { 
+  UserPlus, 
+  Upload, 
+  Search, 
+  Download, 
+  Eye, 
+  Heart, 
+  List, 
+  Filter, 
+  BookOpen, 
+  Users, 
+  Clock, 
+  Star,
+  ArrowRight,
+  Sparkles,
+  Zap,
+  Target,
+  Globe,
+  Shield,
+  Smartphone,
+  Cloud,
+  CheckCircle,
+  Play
+} from 'lucide-react';
 
 const features = [
-  { title: "Smart Search", desc: "Quickly find notes by title, author, or subject using an intuitive search bar with advanced filtering.", icon: Search, color: "text-blue-600", bg: "bg-blue-100" },
-  { title: "Subject Filters", desc: "Filter notes based on your semester subjects like DSA, WAP, Math, PSP and more with one click.", icon: Filter, color: "text-green-600", bg: "bg-green-100" },
-  { title: "Sort & Organize", desc: "Sort notes by popularity, upload date, or alphabetical order to find exactly what you need.", icon: List, color: "text-purple-600", bg: "bg-purple-100" },
-  { title: "Quick View", desc: "Preview notes before downloading and make informed choices about your study materials.", icon: Eye, color: "text-orange-600", bg: "bg-orange-100" },
-  { title: "Save Favorites", desc: "Bookmark frequently used notes for quick access from your personal dashboard anytime.", icon: Heart, color: "text-pink-600", bg: "bg-pink-100" },
-  { title: "Auto-Sync", desc: "All your uploads and saved notes are automatically synced across all your devices seamlessly.", icon: Download, color: "text-indigo-600", bg: "bg-indigo-100" },
+  { 
+    title: "Smart Search", 
+    desc: "Find notes instantly with AI-powered search that understands context and content.", 
+    icon: Search, 
+    color: "text-accent",
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-[#ffb3a7] to-[#ff6f61]"
+  },
+  { 
+    title: "Organize Everything", 
+    desc: "Keep your notes organized with tags, folders, and intelligent categorization.", 
+    icon: Filter, 
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
+  },
+  { 
+    title: "Collaborate Seamlessly", 
+    desc: "Share notes with classmates and work together in real-time.", 
+    icon: Users, 
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
+  },
+  { 
+    title: "Access Anywhere", 
+    desc: "Your notes sync across all devices, available offline when you need them.", 
+    icon: Cloud, 
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
+  },
+  { 
+    title: "Secure & Private", 
+    desc: "Your data is encrypted and secure, with complete control over your privacy.", 
+    icon: Shield, 
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
+  },
+  { 
+    title: "Mobile First", 
+    desc: "Optimized for mobile devices with a native app-like experience.", 
+    icon: Smartphone, 
+    color: "text-accent", 
+    bg: "bg-accent-light/20 dark:bg-accent/30",
+    gradient: "from-accent to-accent-600"
+  },
 ];
 
 const steps = [
   {
     icon: UserPlus,
     title: 'Create Account',
-    description: 'Sign up for free and join our community of learners and educators.',
-    step: '01'
+    description: 'Sign up in seconds and join our growing community of learners.',
+    step: '01',
+    delay: '0ms'
   },
   {
     icon: Upload,
     title: 'Upload Notes',
-    description: 'Share your knowledge by uploading your study notes and resources.',
-    step: '02'
+    description: 'Share your knowledge by uploading study materials and resources.',
+    step: '02',
+    delay: '200ms'
   },
   {
     icon: Search,
     title: 'Discover Content',
-    description: 'Browse and search through thousands of high-quality educational materials.',
-    step: '03'
+    description: 'Browse and search through thousands of high-quality materials.',
+    step: '03',
+    delay: '400ms'
   },
   {
     icon: Download,
-    title: 'Access & Learn',
+    title: 'Learn & Grow',
     description: 'Download notes instantly and accelerate your learning journey.',
-    step: '04'
+    step: '04',
+    delay: '600ms'
   }
 ];
 
-export default function HomePage() {
+const stats = [
+        { label: 'Active Users', value: '10,000+', icon: Users, color: 'text-accent' },
+  { label: 'Notes Shared', value: '50,000+', icon: BookOpen, color: 'text-accent' },
+  { label: 'Daily Downloads', value: '5,000+', icon: Download, color: 'text-accent' },
+  { label: 'Average Rating', value: '4.8/5', icon: Star, color: 'text-accent' },
+];
+
+const typingWords = [
+  "achieve",
+  "learn",
+  "understand",
+  "explore",
+  "create",
+  "master",
+  "discover",
+  "improve"
+];
+
+function TypingWord() {
+  const [wordIndex, setWordIndex] = useState(0);
+  const [displayed, setDisplayed] = useState("");
+  const [typing, setTyping] = useState(true);
+
+  useEffect(() => {
+    let timeout;
+    if (typing) {
+      if (displayed.length < typingWords[wordIndex].length) {
+        timeout = setTimeout(() => {
+          setDisplayed(typingWords[wordIndex].slice(0, displayed.length + 1));
+        }, 120);
+      } else {
+        timeout = setTimeout(() => setTyping(false), 1800);
+      }
+    } else {
+      if (displayed.length > 0) {
+        timeout = setTimeout(() => {
+          setDisplayed(displayed.slice(0, -1));
+        }, 70);
+      } else {
+        setTyping(true);
+        setWordIndex((prev) => (prev + 1) % typingWords.length);
+      }
+    }
+    return () => clearTimeout(timeout);
+  }, [displayed, typing, wordIndex]);
+
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 font-sans overflow-auto">
+    <span className="text-accent"> {displayed}<span className="blinking-cursor">|</span> </span>
+  );
+}
 
-
-        <section className="text-center py-24 px-4">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4 flex justify-center items-center gap-2">
-            📚 Browse Notes Effortlessly
-          </h1>
-          <p className="text-2xl text-gray-700 mb-6">Discover, download, and share notes tailored for your curriculum.</p>
-          <div className="flex justify-center gap-4">
-            <Link to="/browse" className="px-6 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-500 shadow-md transition text-xl font-semibold">Browse Notes</Link>
-            <Link to="/upload" className="px-6 py-3 border border-indigo-600 text-indigo-600 rounded-full hover:bg-indigo-50 transition text-xl font-semibold">Upload Notes</Link>
+export default function HomePage() {
+  const isLoggedIn = typeof window !== 'undefined' && localStorage.getItem('token');
+  return (
+    <div className="min-h-screen bg-background overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative py-20 px-4 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-chart-2/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        
+        <div className="relative max-w-6xl mx-auto text-center">
+          <div className="animate-slide-up">
+            <div className="inline-flex items-center space-x-2 bg-accent/50 dark:bg-accent/20 px-4 py-2 rounded-full mb-8 animate-fade-in">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">Join 10,000+ students already learning</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
+              What will you
+              <TypingWord />
+              today?
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed">
+              Remember everything and tackle any project with your notes, tasks, and schedule all in one place.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
+              <Link 
+                to="/browse" 
+                className="group bg-gradient-primary text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-300 hover-scale btn-animated inline-flex items-center gap-3"
+              >
+                <Search className="w-5 h-5" />
+                Start Browsing
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              {!isLoggedIn && (
+                <Link 
+                  to="/signup" 
+                  className="group border-2 border-border text-foreground px-8 py-4 rounded-xl font-semibold text-lg hover:bg-accent transition-all duration-300 hover-scale inline-flex items-center gap-3"
+                >
+                  <Upload className="w-5 h-5" />
+                  Get Started Free
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
+            </div>
           </div>
-        </section>
-
-
-        <section className="py-16 bg-white">
-          <h2 className="text-4xl font-bold text-center text-gray-800 mb-4">🚀 Platform Features</h2>
-          <p className="text-xl text-center text-gray-600 mb-12 max-w-3xl mx-auto">
-            Everything you need to discover, organize, and share educational content seamlessly.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-6 max-w-7xl mx-auto">
-            {features.map((f, i) => (
-              <div key={i} className="bg-indigo-50 rounded-2xl p-6 shadow hover:shadow-xl transition group hover:scale-[1.02]">
-                <div className={`w-12 h-12 flex items-center justify-center rounded-xl mb-4 text-white ${f.bg}`}>
-                  {<f.icon className={`w-6 h-6 ${f.color}`} />}
+          
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto animate-slide-up" style={{ animationDelay: '300ms' }}>
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div key={index} className="text-center group hover-scale">
+                  <div className={`flex justify-center mb-3 ${stat.color}`}>
+                    <Icon className="w-8 h-8" />
+                  </div>
+                  <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-indigo-700 group-hover:text-indigo-900">{f.title}</h3>
-                <p className="text-lg text-gray-600 leading-relaxed">{f.desc}</p>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 px-4 bg-muted/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16 animate-slide-up">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+              Everything you need to
+              <span className="text-accent"> succeed</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Powerful features designed to help you capture, organize, and access your knowledge effortlessly.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div 
+                key={index} 
+                className="card-interactive p-8 group animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className={`w-16 h-16 ${feature.bg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className={`w-8 h-8 ${feature.color}`} />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground mb-4">{feature.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-
-        <section id="how-it-works" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                How It <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Works</span>
-              </h2>
-              <p className="text-2xl text-gray-600 max-w-3xl mx-auto">
-                Get started in minutes with our simple and intuitive process designed for seamless knowledge sharing.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {steps.map((step, index) => {
-                const Icon = step.icon;
-                return (
-                  <div key={index} className="relative group">
-                    {index < steps.length - 1 && (
-                      <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-blue-200 to-indigo-200 transform translate-x-4 z-0"></div>
-                    )}
-                    <div className="relative z-10 text-center">
-                      <div className="w-32 h-32 mx-auto mb-6 bg-white rounded-2xl shadow-lg border border-gray-200 flex items-center justify-center group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                        <div className="relative">
-                          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                            <Icon className="w-8 h-8 text-white" />
-                          </div>
-                          <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-orange-400 to-red-400 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                            {step.step}
-                          </div>
+      {/* How It Works Section */}
+      <section className="py-20 px-4 bg-background">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16 animate-slide-up">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+              Get started in
+              <span className="text-accent"> minutes</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Simple steps to transform how you learn and share knowledge.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <div 
+                  key={index} 
+                  className="relative group animate-slide-up"
+                  style={{ animationDelay: step.delay }}
+                >
+                  {index < steps.length - 1 && (
+                    <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-primary to-transparent transform translate-x-4 z-0"></div>
+                  )}
+                  <div className="relative z-10 text-center">
+                    <div className="w-24 h-24 mx-auto mb-6 bg-gradient-primary rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <div className="relative">
+                        <Icon className="w-12 h-12 text-white" />
+                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-md">
+                          {step.step}
                         </div>
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">{step.title}</h3>
-                      <p className="text-lg text-gray-600 leading-relaxed">{step.description}</p>
                     </div>
+                    <h3 className="text-2xl font-bold text-foreground mb-4">{step.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{step.description}</p>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      {!isLoggedIn && (
+        <section className="py-20 px-4 bg-gradient-primary relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full animate-float"></div>
+          <div className="absolute bottom-10 right-10 w-24 h-24 bg-white/10 rounded-full animate-float" style={{ animationDelay: '3s' }}></div>
+          <div className="relative max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Ready to transform your learning?
+            </h2>
+            <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+              Join thousands of students who are already achieving more with NoteNest.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link
+                to="/signup"
+                className="bg-white text-primary px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-300 hover-scale btn-animated inline-flex items-center gap-3"
+              >
+                <CheckCircle className="w-5 h-5" />
+                Start Free Today
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                to="/browse"
+                className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-primary transition-all duration-300 hover-scale inline-flex items-center gap-3"
+              >
+                <Play className="w-5 h-5" />
+                See How It Works
+              </Link>
             </div>
           </div>
         </section>
-
-
-        <section className="py-20 px-6 text-center bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100">
-          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-            Ready to Join the Community?
-          </h2>
-          <p className="text-2xl text-gray-700 max-w-2xl mx-auto mb-10">
-            Start uploading or downloading notes in seconds.
-          </p>
-
-          <div className="flex flex-col md:flex-row justify-center gap-6 mb-6">
-            <Link
-              to="/browse"
-              className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full shadow-md hover:from-indigo-600 hover:to-purple-700 transition-all text-xl font-semibold"
-            >
-              Start Browsing →
-            </Link>
-            <Link
-              to="/upload"
-              className="px-8 py-3 bg-emerald-600 text-white rounded-full shadow-md hover:bg-emerald-500 transition-all text-xl font-semibold"
-            >
-              Upload Notes
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-6 text-base text-gray-600 font-medium">
-          </div>
-        </section>
-
-<footer className="bg-white py-10 text-center border-t">
-  <div className="flex justify-center items-center gap-2 text-indigo-700 font-bold text-xl mb-2">
-    <span className="text-purple-600 text-2xl">📖</span> NotesShare
-  </div>
-  <p className="text-gray-600 text-base mb-4">
-    Built by students, for students. Join our community and start your learning journey today!
-  </p>
-  <hr className="max-w-xs mx-auto my-4 border-gray-200" />
-  <p className="text-sm text-gray-400">
-    © 2025 <span className="font-semibold">NoteNest</span> • Built with <span className="text-purple-400">💜</span> by students
-  </p>
-</footer>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

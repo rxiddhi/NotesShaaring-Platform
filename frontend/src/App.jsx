@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
 import HomePage from './components/HomePage';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
@@ -15,50 +16,43 @@ import PublicRoute from './components/PublicRoute';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './pages/ResetPassword'; 
 import DoubtDetailPage from './pages/DoubtDetailPage';
+import NotesHistory from './pages/NotesHistory';
+import Footer from './components/Footer';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import Contact from './pages/Contact';
 
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-
-        <Route 
-          path="/dashboard" 
-          element={<PrivateRoute><Dashboard /></PrivateRoute>} 
-        />
-        <Route 
-          path="/notes" 
-          element={<PrivateRoute><NotesPage /></PrivateRoute>} 
-        />
-        <Route 
-          path="/notes/:id" 
-          element={<PrivateRoute><NoteDetailsPage /></PrivateRoute>} 
-        />
-        <Route 
-          path="/upload" 
-          element={<PrivateRoute><NotesUploadPage /></PrivateRoute>} 
-        />
-        <Route 
-          path="/browse" 
-          element={<PrivateRoute><NotesBrowsingPage /></PrivateRoute>} 
-        />
-        <Route 
-          path="/doubts" 
-          element={<PrivateRoute><DoubtsPage /></PrivateRoute>} 
-        />
-        <Route 
-          path="/doubts/:id" 
-          element={<PrivateRoute><DoubtDetailPage /></PrivateRoute>} 
-        />
-
-        <Route path="/auth/success" element={<AuthSuccess />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <div className="theme-transition min-h-screen flex flex-col">
+        <Router>
+          <div className="flex-1 flex flex-col">
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+              <Route path="/notes" element={<PrivateRoute><NotesPage /></PrivateRoute>} />
+              <Route path="/history" element={<PrivateRoute><NotesHistory /></PrivateRoute>} />
+              <Route path="/notes/:id" element={<PrivateRoute><NoteDetailsPage /></PrivateRoute>} />
+              <Route path="/upload" element={<PrivateRoute><NotesUploadPage /></PrivateRoute>} />
+              <Route path="/browse" element={<PrivateRoute><NotesBrowsingPage /></PrivateRoute>} />
+              <Route path="/doubts" element={<PrivateRoute><DoubtsPage /></PrivateRoute>} />
+              <Route path="/doubts/:id" element={<PrivateRoute><DoubtDetailPage /></PrivateRoute>} />
+              <Route path="/auth/success" element={<AuthSuccess />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/contact" element={<Contact />} />
+            </Routes>
+            <Footer />
+          </div>
+        </Router>
+      </div>
+    </ThemeProvider>
   );
 }
 
