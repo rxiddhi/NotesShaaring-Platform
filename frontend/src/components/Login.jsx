@@ -12,6 +12,23 @@ import {
   CheckCircle
 } from 'lucide-react';
 
+// Google SVG icon
+const GoogleIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clipPath="url(#clip0_17_40)">
+      <path d="M23.766 12.276c0-.818-.074-1.604-.213-2.356H12.24v4.451h6.484a5.54 5.54 0 01-2.4 3.632v3.017h3.877c2.27-2.092 3.565-5.176 3.565-8.744z" fill="#4285F4"/>
+      <path d="M12.24 24c3.24 0 5.963-1.07 7.95-2.91l-3.877-3.017c-1.08.726-2.462 1.155-4.073 1.155-3.13 0-5.78-2.112-6.73-4.946H1.54v3.09A11.997 11.997 0 0012.24 24z" fill="#34A853"/>
+      <path d="M5.51 14.282A7.19 7.19 0 014.7 12c0-.792.136-1.56.36-2.282V6.627H1.54A12.004 12.004 0 000 12c0 1.885.453 3.667 1.54 5.373l3.97-3.09z" fill="#FBBC05"/>
+      <path d="M12.24 4.771c1.77 0 3.35.61 4.6 1.81l3.43-3.43C18.2 1.07 15.48 0 12.24 0A11.997 11.997 0 001.54 6.627l3.97 3.09c.95-2.834 3.6-4.946 6.73-4.946z" fill="#EA4335"/>
+    </g>
+    <defs>
+      <clipPath id="clip0_17_40">
+        <rect width="24" height="24" fill="white"/>
+      </clipPath>
+    </defs>
+  </svg>
+);
+
 export default function Login() {
   const [formData, setFormData] = useState({
     email: '',
@@ -179,30 +196,19 @@ export default function Login() {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-primary transition-colors"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
                     <Eye className="h-5 w-5" />
+                  ) : (
+                    <EyeOff className="h-5 w-5" />
                   )}
                 </button>
               </div>
             </div>
 
             {/* Forgot Password Link */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-muted-foreground">
-                  Remember me
-                </label>
-              </div>
+            <div className="flex items-center justify-end">
               <Link
                 to="/forgot-password"
-                className="text-sm text-primary hover:text-primary/80 transition-colors"
+                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 Forgot password?
               </Link>
@@ -245,6 +251,7 @@ export default function Login() {
                 onClick={() => window.location.href = 'http://localhost:3000/api/auth/google-login'}
                 className="w-full flex items-center justify-center gap-3 py-3 border border-border rounded-lg bg-background hover:bg-accent transition-all duration-200 font-medium text-foreground"
               >
+                <GoogleIcon />
                 <span className="text-base font-semibold">Sign in with Google</span>
               </button>
             </div>

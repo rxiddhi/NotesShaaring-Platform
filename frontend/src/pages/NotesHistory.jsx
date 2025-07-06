@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -26,12 +26,7 @@ const NotesHistory = () => {
   const [error, setError] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    fetchCurrentUser();
-    fetchNotes();
-  }, []);
-
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -50,9 +45,9 @@ const NotesHistory = () => {
     } catch (error) {
       console.error('Error fetching current user:', error);
     }
-  };
+  }, [navigate]);
 
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -76,7 +71,12 @@ const NotesHistory = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchCurrentUser();
+    fetchNotes();
+  }, [fetchCurrentUser, fetchNotes]);
 
   // Only filter after both allNotes and currentUser are loaded
   useEffect(() => {

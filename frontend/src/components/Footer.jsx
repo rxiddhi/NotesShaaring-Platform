@@ -46,14 +46,6 @@ export default function Footer() {
               <li><Link to="/forgot-password" className={`${isDark ? 'text-white/90 hover:text-primary-foreground' : 'text-gray-700 hover:text-primary'} transition-colors duration-200 hover:translate-x-1 inline-block`}>Forgot Password</Link></li>
             </ul>
           </div>
-          <div>
-            <h4 className={`font-semibold mb-4 text-lg ${isDark ? 'text-white' : 'text-gray-800'}`}>Legal</h4>
-            <ul className="space-y-2">
-              <li><Link to="/privacy" className={`${isDark ? 'text-white/90 hover:text-primary-foreground' : 'text-gray-700 hover:text-primary'} transition-colors duration-200 hover:translate-x-1 inline-block`}>Privacy</Link></li>
-              <li><Link to="/terms" className={`${isDark ? 'text-white/90 hover:text-primary-foreground' : 'text-gray-700 hover:text-primary'} transition-colors duration-200 hover:translate-x-1 inline-block`}>Terms</Link></li>
-              <li><Link to="/contact" className={`${isDark ? 'text-white/90 hover:text-primary-foreground' : 'text-gray-700 hover:text-primary'} transition-colors duration-200 hover:translate-x-1 inline-block`}>Contact</Link></li>
-            </ul>
-          </div>
         </div>
       </div>
       <div className={`max-w-7xl mx-auto mt-8 flex flex-col md:flex-row justify-between items-center text-xs gap-2 border-t pt-6 ${isDark ? 'text-white/70 border-white/30' : 'text-gray-600 border-gray-300'}`}>

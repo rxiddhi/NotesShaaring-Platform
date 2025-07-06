@@ -168,9 +168,6 @@ export default function NotesUploadPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 animate-slide-up">
-          <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Upload className="w-8 h-8 text-white" />
-          </div>
           <h1 className="text-4xl font-bold text-foreground mb-4">Upload Your Notes</h1>
           <p className="text-xl text-muted-foreground">
             Share your knowledge with the academic community

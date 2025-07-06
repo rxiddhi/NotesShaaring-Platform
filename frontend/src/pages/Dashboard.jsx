@@ -181,6 +181,23 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Bio Section */}
+        {stats?.user?.bio && (
+          <div className="mb-8 animate-slide-up" style={{ animationDelay: '50ms' }}>
+            <div className="card-interactive p-6" style={{ borderTop: '7px solid var(--accent)' }}>
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-accent-light/20 dark:bg-accent/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <User className="w-6 h-6 text-accent" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">About Me</h3>
+                  <p className="text-muted-foreground leading-relaxed">{stats.user.bio}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Favorites Card */}
         <div className="mb-8 animate-slide-up">
           <div className="card-interactive p-6">
@@ -196,10 +213,10 @@ export default function Dashboard() {
                   <div key={note._id} className="bg-accent rounded-lg p-4 flex flex-col">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-foreground">{note.title}</span>
-                      <span className="text-xs text-muted-foreground">{note.subject}</span>
+                      <span className="text-xs text-foreground">{note.subject}</span>
                     </div>
-                    <p className="text-muted-foreground text-sm mb-2 line-clamp-2">{note.description}</p>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <p className="text-foreground text-sm mb-2 line-clamp-2">{note.description}</p>
+                    <div className="flex items-center justify-between text-xs text-foreground">
                       <span>By: {note.uploadedBy?.username || 'Anonymous'}</span>
                       <span>{new Date(note.createdAt).toLocaleDateString()}</span>
                     </div>

@@ -313,9 +313,9 @@ export default function DoubtsPage() {
   const getSortedDoubts = () => {
     let sorted = [...filteredDoubts];
     if (sortOption === 'newest') {
-      sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      sorted.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     } else if (sortOption === 'oldest') {
-      sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      sorted.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     } else if (sortOption === 'mostAnswered') {
       sorted.sort((a, b) => (b.answers?.length || 0) - (a.answers?.length || 0));
     } else if (sortOption === 'leastAnswered') {
@@ -509,12 +509,12 @@ export default function DoubtsPage() {
                         <div className="flex items-center space-x-2">
                           <User className="w-4 h-4 text-muted-foreground" />
                           <span className="font-medium text-foreground">{answer.author?.username || 'Anonymous'}</span>
-                          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                          <div className="flex items-center space-x-1 text-xs text-foreground">
                             <Calendar className="w-3 h-3" />
                             <span>{formatDate(answer.time)}</span>
                           </div>
                           {isEdited(answer.time, answer.updatedAt) && (
-                            <span className="text-xs text-muted-foreground italic">(edited)</span>
+                            <span className="text-xs text-foreground italic">(edited)</span>
                           )}
                         </div>
                         {isAnswerOwner(answer) && (

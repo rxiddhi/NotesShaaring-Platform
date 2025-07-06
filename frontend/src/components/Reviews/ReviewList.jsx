@@ -147,7 +147,7 @@ const ReviewList = ({ noteId, currentUserId }) => {
                 </div>
               </div>
               <p className="text-foreground mb-3">{currentUserReview.comment}</p>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-foreground">
                 <div className="flex items-center space-x-1">
                   <Calendar className="w-3 h-3" />
                   <span>{formatDate(currentUserReview.createdAt)}</span>
@@ -204,7 +204,7 @@ const ReviewList = ({ noteId, currentUserId }) => {
                   </div>
                 </div>
                 <p className="text-foreground mb-3">{review.comment}</p>
-                <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                <div className="flex items-center space-x-1 text-xs text-foreground">
                   <Calendar className="w-3 h-3" />
                   <span>{formatDate(review.createdAt)}</span>
                   {review.updatedAt && review.updatedAt !== review.createdAt && (

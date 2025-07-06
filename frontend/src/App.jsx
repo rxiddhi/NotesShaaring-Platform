@@ -19,7 +19,6 @@ import DoubtDetailPage from './pages/DoubtDetailPage';
 import NotesHistory from './pages/NotesHistory';
 import Footer from './components/Footer';
 import Privacy from './pages/Privacy';
-import Terms from './pages/Terms';
 import Contact from './pages/Contact';
 
 function App() {
@@ -45,7 +44,6 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
               <Route path="/contact" element={<Contact />} />
             </Routes>
             <Footer />

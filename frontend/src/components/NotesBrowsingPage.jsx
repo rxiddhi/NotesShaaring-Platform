@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -40,6 +40,7 @@ const sortOptions = [
   { value: 'oldest', label: 'Oldest First' },
   { value: 'downloads', label: 'Most Downloaded' },
   { value: 'likes', label: 'Most Liked' },
+  { value: 'reviewed', label: 'Most Reviewed' },
   { value: 'title', label: 'Title A-Z' }
 ];
 
@@ -57,13 +58,7 @@ const NotesBrowsingPage = () => {
   const [favorites, setFavorites] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    fetchNotes();
-    fetchFavorites();
-    fetchCurrentUser();
-  }, [searchTerm, selectedSubject, sortBy, currentPage]);
-
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -102,6 +97,8 @@ const NotesBrowsingPage = () => {
             return (b.downloadCount || 0) - (a.downloadCount || 0);
           case 'likes':
             return (b.likes || 0) - (a.likes || 0);
+          case 'reviewed':
+            return (b.reviewCount || 0) - (a.reviewCount || 0);
           case 'title':
             return a.title.localeCompare(b.title);
           default:
@@ -117,9 +114,9 @@ const NotesBrowsingPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, selectedSubject, sortBy]);
 
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -135,9 +132,9 @@ const NotesBrowsingPage = () => {
     } catch (error) {
       console.error('Error fetching current user:', error);
     }
-  };
+  }, []);
 
-  const fetchFavorites = async () => {
+  const fetchFavorites = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -149,7 +146,13 @@ const NotesBrowsingPage = () => {
     } catch (error) {
       console.error('Error fetching favorites:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNotes();
+    fetchFavorites();
+    fetchCurrentUser();
+  }, [fetchNotes, fetchFavorites, fetchCurrentUser]);
 
   const handleDownload = async (noteId) => {
     try {
@@ -466,8 +469,8 @@ const NotesBrowsingPage = () => {
                       onClick={() => navigate(`/notes/${note._id}`)}
                       className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 hover-scale"
                     >
-                      <Eye className="w-4 h-4" />
-                      View
+                      <span role="img" aria-label="eye">👁️</span>
+                      Review
                     </button>
                     <button
                       onClick={() => handleDownload(note._id)}

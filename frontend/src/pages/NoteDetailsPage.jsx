@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Download, 
@@ -9,9 +9,11 @@ import {
   BookOpen, 
   AlertCircle, 
   Loader,
-  ArrowLeft
+  ArrowLeft,
+  Upload
 } from 'lucide-react';
 import ReviewList from '../components/Reviews/ReviewList';
+import ReactModal from 'react-modal';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -22,31 +24,15 @@ const NoteDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editSubject, setEditSubject] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [editFile, setEditFile] = useState(null);
 
-  useEffect(() => {
-    fetchNote();
-    fetchCurrentUser();
-  }, [noteId]);
-
-  const fetchCurrentUser = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        setCurrentUser(userData.user);
-      }
-    } catch (error) {
-      console.error('Error fetching current user:', error);
-    }
-  };
-
-  const fetchNote = async () => {
+  const fetchNote = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -65,7 +51,39 @@ const NoteDetailsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [noteId]);
+
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setCurrentUser(userData.user);
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNote();
+    fetchCurrentUser();
+  }, [fetchNote, fetchCurrentUser]);
+
+  useEffect(() => {
+    if (note) {
+      setEditTitle(note.title || '');
+      setEditSubject(note.subject || '');
+      setEditDescription(note.description || '');
+      setEditFile(null);
+    }
+  }, [note]);
 
   const handleDownload = async () => {
     try {
@@ -258,7 +276,7 @@ const NoteDetailsPage = () => {
             {isOwner && (
               <div className="flex gap-2 ml-4">
                 <button
-                  onClick={() => navigate(`/notes/${noteId}/edit`)}
+                  onClick={() => setShowEditModal(true)}
                   className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 hover-scale"
                 >
                   <Edit className="w-4 h-4" />
@@ -269,6 +287,17 @@ const NoteDetailsPage = () => {
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
+                {/* Re-upload button if note has reviews */}
+                {note.reviewCount > 0 && (
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="p-2 text-yellow-600 border border-yellow-400 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-all duration-200 hover-scale font-semibold flex items-center gap-1"
+                    title="Re-upload or update your note after reviews"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>Re-upload Note</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -277,21 +306,21 @@ const NoteDetailsPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="text-center p-4 bg-accent rounded-lg">
               <div className="text-2xl font-bold text-foreground">{note.downloadCount || 0}</div>
-              <div className="text-xs text-muted-foreground">Downloads</div>
+              <div className="text-xs text-foreground">Downloads</div>
             </div>
             <div className="text-center p-4 bg-accent rounded-lg">
               <div className="text-2xl font-bold text-foreground">{note.likes || 0}</div>
-              <div className="text-xs text-muted-foreground">Likes</div>
+              <div className="text-xs text-foreground">Likes</div>
             </div>
             <div className="text-center p-4 bg-accent rounded-lg">
               <div className="text-2xl font-bold text-foreground">{note.reviewCount || 0}</div>
-              <div className="text-xs text-muted-foreground">Reviews</div>
+              <div className="text-xs text-foreground">Reviews</div>
             </div>
             <div className="text-center p-4 bg-accent rounded-lg">
               <div className="text-2xl font-bold text-foreground">
                 {note.averageRating ? note.averageRating.toFixed(1) : '0.0'}
               </div>
-              <div className="text-xs text-muted-foreground">Rating</div>
+              <div className="text-xs text-foreground">Rating</div>
             </div>
           </div>
 
@@ -320,9 +349,6 @@ const NoteDetailsPage = () => {
                       <p className="font-medium text-foreground">
                         {note.title || 'Untitled Note'}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {note.fileUrl.split('.').pop().toUpperCase()} file
-                      </p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -350,6 +376,128 @@ const NoteDetailsPage = () => {
         <div className="mt-8 animate-slide-up" style={{ animationDelay: '200ms' }}>
           <ReviewList noteId={noteId} currentUserId={currentUser?.userId} />
         </div>
+
+        {/* Edit Note Modal */}
+        <ReactModal
+          isOpen={showEditModal}
+          onRequestClose={() => setShowEditModal(false)}
+          className="bg-card p-8 rounded-xl shadow-xl w-full max-w-md mx-auto mt-24 animate-scale-in max-h-[90vh] overflow-y-auto outline-none"
+          overlayClassName="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+          ariaHideApp={false}
+        >
+          <h2 className="text-2xl font-bold mb-6 text-foreground flex items-center gap-2 pr-8">
+            <Edit className="w-5 h-5 text-primary" /> Edit Note
+          </h2>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setEditLoading(true);
+              setEditError('');
+              try {
+                const token = localStorage.getItem('token');
+                const formData = new FormData();
+                formData.append('title', editTitle);
+                formData.append('subject', editSubject);
+                formData.append('description', editDescription);
+                if (editFile) {
+                  formData.append('file', editFile);
+                }
+                const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
+                  method: 'PATCH',
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: formData,
+                });
+                if (response.ok) {
+                  setShowEditModal(false);
+                  fetchNote();
+                } else {
+                  let errorMsg = `Error: ${response.status}`;
+                  try {
+                    const data = await response.json();
+                    errorMsg = data.message || errorMsg;
+                  } catch {
+                    // Not JSON
+                  }
+                  setEditError(errorMsg);
+                }
+              } catch (err) {
+                setEditError('Network error: ' + (err?.message || 'Please try again.'));
+              } finally {
+                setEditLoading(false);
+              }
+            }}
+            className="space-y-6"
+          >
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Title</label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={e => setEditTitle(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Subject</label>
+              <input
+                type="text"
+                value={editSubject}
+                onChange={e => setEditSubject(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Description</label>
+              <textarea
+                value={editDescription}
+                onChange={e => setEditDescription(e.target.value)}
+                rows={4}
+                required
+                className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Replace File (optional)</label>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,.ppt,.pptx"
+                onChange={e => setEditFile(e.target.files[0])}
+                className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+              />
+              {editFile && (
+                <p className="text-xs text-muted-foreground mt-1">Selected: {editFile.name}</p>
+              )}
+            </div>
+            {editError && (
+              <div className="flex items-center space-x-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+                <p className="text-destructive text-sm">{editError}</p>
+              </div>
+            )}
+            <div className="flex justify-end gap-4">
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="px-6 py-2 border-2 border-border text-foreground rounded-lg font-medium hover:bg-accent transition-all duration-200 hover-scale"
+                disabled={editLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={editLoading}
+                className="bg-gradient-primary text-white px-8 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {editLoading ? <Loader className="w-5 h-5 animate-spin" /> : <Edit className="w-5 h-5" />}
+                {editLoading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </ReactModal>
       </div>
     </div>
   );
