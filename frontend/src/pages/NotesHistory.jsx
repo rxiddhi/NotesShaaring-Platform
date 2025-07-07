@@ -291,7 +291,29 @@ const NotesHistory = () => {
 
                     <div className="flex gap-2">
                       <button
-                        onClick={() => navigate(`/notes/${note._id}`)}
+                        onClick={async () => {
+                          if (!note.fileUrl) return;
+                          const token = localStorage.getItem('token');
+                          try {
+                            const response = await fetch(note.fileUrl, {
+                              headers: { Authorization: `Bearer ${token}` }
+                            });
+                            if (!response.ok) throw new Error('Failed to fetch PDF');
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+                            const newWindow = window.open();
+                            if (newWindow) {
+                              newWindow.document.write(
+                                `<iframe src="${url}" frameborder="0" style="width:100vw;height:100vh;" allowfullscreen></iframe>`
+                              );
+                            } else {
+                              alert('Please allow popups for this site');
+                            }
+                            setTimeout(() => window.URL.revokeObjectURL(url), 10000);
+                          } catch {
+                            alert('Could not open PDF.');
+                          }
+                        }}
                         className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 hover-scale"
                       >
                         <Eye className="w-4 h-4" />
@@ -392,7 +414,29 @@ const NotesHistory = () => {
 
                     <div className="flex gap-2">
                       <button
-                        onClick={() => navigate(`/notes/${note._id}`)}
+                        onClick={async () => {
+                          if (!note.fileUrl) return;
+                          const token = localStorage.getItem('token');
+                          try {
+                            const response = await fetch(note.fileUrl, {
+                              headers: { Authorization: `Bearer ${token}` }
+                            });
+                            if (!response.ok) throw new Error('Failed to fetch PDF');
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+                            const newWindow = window.open();
+                            if (newWindow) {
+                              newWindow.document.write(
+                                `<iframe src="${url}" frameborder="0" style="width:100vw;height:100vh;" allowfullscreen></iframe>`
+                              );
+                            } else {
+                              alert('Please allow popups for this site');
+                            }
+                            setTimeout(() => window.URL.revokeObjectURL(url), 10000);
+                          } catch {
+                            alert('Could not open PDF.');
+                          }
+                        }}
                         className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 hover-scale"
                       >
                         <Eye className="w-4 h-4" />
