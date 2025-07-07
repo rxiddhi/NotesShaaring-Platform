@@ -31,6 +31,7 @@ const NoteDetailsPage = () => {
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
   const [editFile, setEditFile] = useState(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
 
   const fetchNote = useCallback(async () => {
     try {
@@ -83,6 +84,33 @@ const NoteDetailsPage = () => {
       setEditDescription(note.description || '');
       setEditFile(null);
     }
+  }, [note]);
+
+  // Fetch PDF as blob and set blob URL for iframe
+  useEffect(() => {
+    let url = null;
+    async function fetchPdfBlob() {
+      if (!note || !note.fileUrl) {
+        setPdfBlobUrl(null);
+        return;
+      }
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(note.fileUrl, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch PDF');
+        const blob = await response.blob();
+        url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+        setPdfBlobUrl(url);
+      } catch {
+        setPdfBlobUrl(null);
+      }
+    }
+    fetchPdfBlob();
+    return () => {
+      if (url) window.URL.revokeObjectURL(url);
+    };
   }, [note]);
 
   const handleDownload = async () => {
@@ -324,16 +352,46 @@ const NoteDetailsPage = () => {
             </div>
           </div>
 
-          {/* Download Button */}
-          <div className="flex justify-center mb-8">
-            <button
-              onClick={handleDownload}
-              className="bg-gradient-primary text-white px-8 py-4 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated flex items-center space-x-2"
-            >
-              <Download className="w-5 h-5" />
-              <span>Download Note</span>
-            </button>
-          </div>
+          {/* Download and View Buttons */}
+          {note.fileUrl && (
+            <div className="flex justify-center mb-8 gap-4">
+              <button
+                onClick={handleDownload}
+                className="bg-gradient-primary text-white px-8 py-4 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated flex items-center space-x-2"
+              >
+                <Download className="w-5 h-5" />
+                <span>Download Note</span>
+              </button>
+              <button
+                onClick={async () => {
+                  const token = localStorage.getItem('token');
+                  try {
+                    const response = await fetch(note.fileUrl, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (!response.ok) throw new Error('Failed to fetch PDF');
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+                    const newWindow = window.open();
+                    if (newWindow) {
+                      newWindow.document.write(
+                        `<iframe src="${url}" frameborder="0" style="width:100vw;height:100vh;" allowfullscreen></iframe>`
+                      );
+                    } else {
+                      alert('Please allow popups for this site');
+                    }
+                    setTimeout(() => window.URL.revokeObjectURL(url), 10000);
+                  } catch {
+                    alert('Could not open PDF.');
+                  }
+                }}
+                className="border-2 border-primary text-primary px-8 py-4 rounded-lg font-medium hover:bg-primary/10 transition-all duration-200 hover-scale flex items-center space-x-2"
+              >
+                <BookOpen className="w-5 h-5" />
+                <span>View Note</span>
+              </button>
+            </div>
+          )}
 
           {/* File Information */}
           {note.fileUrl && (
@@ -358,15 +416,32 @@ const NoteDetailsPage = () => {
                   </div>
                 </div>
               </div>
-                              <div className="mt-4 p-4 bg-accent-light/20 dark:bg-accent/30 rounded-lg border border-accent/30 dark:border-accent/50">
-                  <p className="text-sm text-accent dark:text-accent-light">
-                  💡 <strong>Tip:</strong> Click the download button above to save and view this file on your device.
+              <div className="mt-4 p-4 bg-accent-light/20 dark:bg-accent/30 rounded-lg border border-accent/30 dark:border-accent/50">
+                <p className="text-sm text-accent dark:text-accent-light">
+                  💡 <strong>Tip:</strong> Click the download or view button above to save or view this file on your device.
                 </p>
               </div>
               <div className="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
                 <p className="text-sm text-yellow-700 dark:text-yellow-300">
                   ⚠️ <strong>Note:</strong> Some older files may not be immediately accessible. If download fails, please try again later or contact the uploader.
                 </p>
+              </div>
+              {/* Embedded PDF Viewer */}
+              <div className="mt-6 w-full flex justify-center">
+                {pdfBlobUrl ? (
+                  <iframe
+                    src={pdfBlobUrl}
+                    title="PDF Viewer"
+                    width="100%"
+                    height="600px"
+                    style={{ border: 'none', borderRadius: '8px', background: '#fff' }}
+                    allow="autoplay"
+                  />
+                ) : (
+                  <div className="w-full h-[600px] flex items-center justify-center bg-muted/30 rounded-lg">
+                    <span className="text-muted-foreground">PDF preview unavailable</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
