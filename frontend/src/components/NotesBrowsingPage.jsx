@@ -41,7 +41,15 @@ const sortOptions = [
   { value: 'downloads', label: 'Most Downloaded' },
   { value: 'likes', label: 'Most Liked' },
   { value: 'reviewed', label: 'Most Reviewed' },
-  { value: 'title', label: 'Title A-Z' }
+  { value: 'title', label: 'Title A-Z' },
+  { value: 'difficulty', label: 'Difficulty Level' }, // Added new option
+];
+
+const difficultyLevels = [
+  { value: '', label: 'All Levels' },
+  { value: 'Basic', label: 'Basic' },
+  { value: 'Intermediate', label: 'Intermediate' },
+  { value: 'Advanced', label: 'Advanced' },
 ];
 
 const NotesBrowsingPage = () => {
@@ -59,6 +67,7 @@ const NotesBrowsingPage = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryContent, setSummaryContent] = useState("");
+  const [selectedDifficulty, setSelectedDifficulty] = useState('');
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -87,7 +96,11 @@ const NotesBrowsingPage = () => {
           note.subject === selectedSubject
         );
       }
-      
+
+      // Filter by difficulty if selected
+      if (sortBy === 'difficulty' && selectedDifficulty) {
+        filteredNotes = filteredNotes.filter(note => note.difficulty === selectedDifficulty);
+      }
       
       filteredNotes.sort((a, b) => {
         switch (sortBy) {
@@ -103,6 +116,7 @@ const NotesBrowsingPage = () => {
             return (b.reviewCount || 0) - (a.reviewCount || 0);
           case 'title':
             return a.title.localeCompare(b.title);
+          // No default sort for difficulty
           default:
             return 0;
         }
@@ -116,7 +130,7 @@ const NotesBrowsingPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, selectedSubject, sortBy]);
+  }, [searchTerm, selectedSubject, sortBy, selectedDifficulty]);
 
   const fetchCurrentUser = useCallback(async () => {
     try {
@@ -365,6 +379,7 @@ const NotesBrowsingPage = () => {
                   onChange={(e) => {
                     setSortBy(e.target.value);
                     setCurrentPage(1);
+                    if (e.target.value !== 'difficulty') setSelectedDifficulty('');
                   }}
                   className="pl-10 pr-8 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
                 >
@@ -372,6 +387,18 @@ const NotesBrowsingPage = () => {
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
+                {/* Show secondary dropdown if Difficulty Level is selected */}
+                {sortBy === 'difficulty' && (
+                  <select
+                    value={selectedDifficulty}
+                    onChange={e => setSelectedDifficulty(e.target.value)}
+                    className="ml-2 py-3 px-4 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
+                  >
+                    {difficultyLevels.map(level => (
+                      <option key={level.value} value={level.value}>{level.label}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
           </div>
