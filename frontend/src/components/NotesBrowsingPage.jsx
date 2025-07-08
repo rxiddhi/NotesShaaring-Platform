@@ -67,7 +67,7 @@ const NotesBrowsingPage = () => {
       const allNotesFetched = response.data.notes || [];
       setAllNotes(allNotesFetched);
       
-      // Client-side filtering and sorting
+     
       let filteredNotes = allNotesFetched;
       
       // Filter by search term
@@ -86,7 +86,7 @@ const NotesBrowsingPage = () => {
         );
       }
       
-      // Sort notes
+      
       filteredNotes.sort((a, b) => {
         switch (sortBy) {
           case 'newest':
@@ -107,7 +107,7 @@ const NotesBrowsingPage = () => {
       });
       
       setNotes(filteredNotes);
-      setTotalPages(1); // No pagination for now
+      setTotalPages(1);
     } catch (error) {
       console.error('Error fetching notes:', error);
       setError('Failed to load notes. Please try again.');
@@ -162,26 +162,26 @@ const NotesBrowsingPage = () => {
         return;
       }
 
-      // First, track the download
+     
       await axios.put(`${API_BASE_URL}/notes/${noteId}/download`, {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
-      // Then download the file using the authenticated route
+      
       const note = notes.find(n => n._id === noteId);
       if (note) {
         const downloadUrl = `${API_BASE_URL}/notes/${noteId}/download-file`;
         
-        // Fetch the file with authorization header
+        
         const response = await fetch(downloadUrl, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         if (response.ok) {
-          // Create blob from response
+       
           const blob = await response.blob();
           
-          // Create download link
+          
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
@@ -190,14 +190,14 @@ const NotesBrowsingPage = () => {
           link.click();
           link.remove();
           
-          // Clean up the blob URL
+         
           window.URL.revokeObjectURL(url);
         } else {
           throw new Error('Failed to download file');
         }
       }
 
-      // Refresh notes to update download count
+      
       fetchNotes();
     } catch (error) {
       console.error('Error downloading note:', error);
@@ -469,7 +469,7 @@ const NotesBrowsingPage = () => {
                       onClick={() => navigate(`/notes/${note._id}`)}
                       className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 hover-scale"
                     >
-                      <span role="img" aria-label="eye">👁️</span>
+                      <span role="img" aria-label="eye"></span>
                       Review
                     </button>
                     <button
