@@ -57,6 +57,8 @@ const NotesBrowsingPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [favorites, setFavorites] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [summaryContent, setSummaryContent] = useState("");
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -258,6 +260,15 @@ const NotesBrowsingPage = () => {
       console.error('Error toggling favorite:', error);
       alert('Failed to update favorite');
     }
+  };
+
+  const handleViewSummary = (note) => {
+    if (note.summary && note.summary.trim() !== "") {
+      setSummaryContent(note.summary);
+    } else {
+      setSummaryContent("Summary not available");
+    }
+    setShowSummaryModal(true);
   };
 
   const formatDate = (dateString) => {
@@ -464,20 +475,29 @@ const NotesBrowsingPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  {/* Action Buttons Layout */}
+                  <div className="flex flex-col gap-2 mt-2">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => navigate(`/notes/${note._id}`)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 px-2 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 hover-scale"
+                      >
+                        Review
+                      </button>
+                      <button
+                        onClick={() => handleDownload(note._id)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 px-2 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download
+                      </button>
+                    </div>
                     <button
-                      onClick={() => navigate(`/notes/${note._id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 hover-scale"
+                      onClick={() => handleViewSummary(note)}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-2 border border-accent text-accent rounded-lg font-medium hover:bg-accent/10 transition-all duration-200 hover-scale"
                     >
-                      <span role="img" aria-label="eye"></span>
-                      Review
-                    </button>
-                    <button
-                      onClick={() => handleDownload(note._id)}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download
+                      <BookOpen className="w-4 h-4" />
+                      View Summary
                     </button>
                   </div>
                 </div>
@@ -523,6 +543,24 @@ const NotesBrowsingPage = () => {
           </>
         )}
       </div>
+      {/* Summary Modal */}
+      {showSummaryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-background rounded-lg shadow-lg max-w-lg w-full p-6 relative animate-fade-in">
+            <button
+              className="absolute top-2 right-2 text-muted-foreground hover:text-foreground text-xl font-bold"
+              onClick={() => setShowSummaryModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h2 className="text-2xl font-bold mb-4 text-foreground">Note Summary</h2>
+            <div className="text-muted-foreground whitespace-pre-line">
+              {summaryContent}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
