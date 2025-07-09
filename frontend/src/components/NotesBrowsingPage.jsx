@@ -52,6 +52,21 @@ const difficultyLevels = [
   { value: 'Advanced', label: 'Advanced' },
 ];
 
+// Add a helper for badge color
+const difficultyBadgeStyles = {
+  Basic: 'bg-green-100 text-green-700 border-green-300',
+  Intermediate: 'bg-orange-100 text-orange-700 border-orange-300',
+  Advanced: 'bg-red-100 text-red-700 border-red-300',
+};
+
+// Map legacy difficulty values to new ones
+function mapDifficulty(level) {
+  if (level === 'Easy') return 'Basic';
+  if (level === 'Medium') return 'Intermediate';
+  if (level === 'Hard') return 'Advanced';
+  return level;
+}
+
 const NotesBrowsingPage = () => {
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
@@ -440,7 +455,16 @@ const NotesBrowsingPage = () => {
                     <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full">
                       {note.subject}
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                      {/* Difficulty Badge */}
+                      {note.difficulty && (
+                        <span
+                          className={`px-2 py-1 border text-xs font-semibold rounded-full shadow-sm ${difficultyBadgeStyles[mapDifficulty(note.difficulty)] || 'bg-gray-100 text-gray-600 border-gray-300'}`}
+                          title={`Difficulty: ${mapDifficulty(note.difficulty)}`}
+                        >
+                          {mapDifficulty(note.difficulty)}
+                        </span>
+                      )}
                       {isOwner(note) && (
                         <>
                           <button
