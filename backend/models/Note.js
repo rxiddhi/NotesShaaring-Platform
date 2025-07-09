@@ -14,6 +14,10 @@ const noteSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  summary: {                        
+    type: String,
+    trim: true
+  },
   fileUrl: {
     type: String,
     required: true,
@@ -44,7 +48,7 @@ const noteSchema = new mongoose.Schema({
       ref: 'User'
     }
   ],
-  difficulty: {
+    difficulty: {
     type: String,
     enum: ["Basic", "Intermediate", "Advanced"],
     default: "Basic"
@@ -53,13 +57,11 @@ const noteSchema = new mongoose.Schema({
   timestamps: true
 });
 
-
 noteSchema.index({
   title: 'text',
   subject: 'text',
   description: 'text'
 });
-
 
 noteSchema.virtual('likes').get(function () {
   return this.likedBy.length;

@@ -28,7 +28,6 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
       subject,
       description,
       fileUrl,
-      
       uploadedBy: req.user.userId,
       downloadedBy: [],
       downloadCount: 0,
@@ -260,7 +259,7 @@ router.get("/:id/download-file", protect, async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${path.basename(filePath)}"`
+      `attachment; filename=\"${path.basename(filePath)}\"`
     );
 
     const fileStream = fs.createReadStream(filePath);
