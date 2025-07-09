@@ -7,6 +7,7 @@ const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
 const { estimateDifficulty } = require("../utils/difficultyEstimator");
+const { getRelatedArticles } = require("../utils/googleSearchApi");
 
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
@@ -267,6 +268,26 @@ router.get("/:id/download-file", protect, async (req, res) => {
   } catch (err) {
     console.error("File download error:", err);
     res.status(500).json({ message: "Server error while downloading file" });
+  }
+});
+
+// Get related articles for a note
+router.get("/:id/related-articles", async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    const relatedArticles = await getRelatedArticles(note);
+    
+    res.status(200).json({
+      message: "Related articles fetched successfully",
+      data: relatedArticles
+    });
+  } catch (err) {
+    console.error("Fetch related articles error:", err);
+    res.status(500).json({ message: "Server error while fetching related articles" });
   }
 });
 
