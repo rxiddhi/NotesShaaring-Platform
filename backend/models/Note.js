@@ -43,7 +43,12 @@ const noteSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     }
-  ]
+  ],
+  difficulty: {
+    type: String,
+    enum: ["Basic", "Intermediate", "Advanced"],
+    default: "Basic"
+  }
 }, {
   timestamps: true
 });
