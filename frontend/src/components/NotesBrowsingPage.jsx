@@ -41,7 +41,15 @@ const sortOptions = [
   { value: 'downloads', label: 'Most Downloaded' },
   { value: 'likes', label: 'Most Liked' },
   { value: 'reviewed', label: 'Most Reviewed' },
-  { value: 'title', label: 'Title A-Z' }
+  { value: 'title', label: 'Title A-Z' },
+  { value: 'difficulty', label: 'Difficulty Level' }, // Added new option
+];
+
+const difficultyLevels = [
+  { value: '', label: 'All Levels' },
+  { value: 'Basic', label: 'Basic' },
+  { value: 'Intermediate', label: 'Intermediate' },
+  { value: 'Advanced', label: 'Advanced' },
 ];
 
 const NotesBrowsingPage = () => {
@@ -57,6 +65,9 @@ const NotesBrowsingPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [favorites, setFavorites] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [summaryContent, setSummaryContent] = useState("");
+  const [selectedDifficulty, setSelectedDifficulty] = useState('');
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -85,7 +96,11 @@ const NotesBrowsingPage = () => {
           note.subject === selectedSubject
         );
       }
-      
+
+      // Filter by difficulty if selected
+      if (sortBy === 'difficulty' && selectedDifficulty) {
+        filteredNotes = filteredNotes.filter(note => note.difficulty === selectedDifficulty);
+      }
       
       filteredNotes.sort((a, b) => {
         switch (sortBy) {
@@ -101,6 +116,7 @@ const NotesBrowsingPage = () => {
             return (b.reviewCount || 0) - (a.reviewCount || 0);
           case 'title':
             return a.title.localeCompare(b.title);
+          // No default sort for difficulty
           default:
             return 0;
         }
@@ -114,7 +130,7 @@ const NotesBrowsingPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, selectedSubject, sortBy]);
+  }, [searchTerm, selectedSubject, sortBy, selectedDifficulty]);
 
   const fetchCurrentUser = useCallback(async () => {
     try {
@@ -260,6 +276,15 @@ const NotesBrowsingPage = () => {
     }
   };
 
+  const handleViewSummary = (note) => {
+    if (note.summary && note.summary.trim() !== "") {
+      setSummaryContent(note.summary);
+    } else {
+      setSummaryContent("Summary not available");
+    }
+    setShowSummaryModal(true);
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -354,6 +379,7 @@ const NotesBrowsingPage = () => {
                   onChange={(e) => {
                     setSortBy(e.target.value);
                     setCurrentPage(1);
+                    if (e.target.value !== 'difficulty') setSelectedDifficulty('');
                   }}
                   className="pl-10 pr-8 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
                 >
@@ -361,6 +387,18 @@ const NotesBrowsingPage = () => {
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
+                {/* Show secondary dropdown if Difficulty Level is selected */}
+                {sortBy === 'difficulty' && (
+                  <select
+                    value={selectedDifficulty}
+                    onChange={e => setSelectedDifficulty(e.target.value)}
+                    className="ml-2 py-3 px-4 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
+                  >
+                    {difficultyLevels.map(level => (
+                      <option key={level.value} value={level.value}>{level.label}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
           </div>
@@ -464,20 +502,29 @@ const NotesBrowsingPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  {/* Action Buttons Layout */}
+                  <div className="flex flex-col gap-2 mt-2">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => navigate(`/notes/${note._id}`)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 px-2 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 hover-scale"
+                      >
+                        Review
+                      </button>
+                      <button
+                        onClick={() => handleDownload(note._id)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 px-2 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download
+                      </button>
+                    </div>
                     <button
-                      onClick={() => navigate(`/notes/${note._id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-foreground hover:bg-accent transition-all duration-200 hover-scale"
+                      onClick={() => handleViewSummary(note)}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-2 border border-accent text-accent rounded-lg font-medium hover:bg-accent/10 transition-all duration-200 hover-scale"
                     >
-                      <span role="img" aria-label="eye"></span>
-                      Review
-                    </button>
-                    <button
-                      onClick={() => handleDownload(note._id)}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download
+                      <BookOpen className="w-4 h-4" />
+                      View Summary
                     </button>
                   </div>
                 </div>
@@ -523,6 +570,24 @@ const NotesBrowsingPage = () => {
           </>
         )}
       </div>
+      {/* Summary Modal */}
+      {showSummaryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-background rounded-lg shadow-lg max-w-lg w-full p-6 relative animate-fade-in">
+            <button
+              className="absolute top-2 right-2 text-muted-foreground hover:text-foreground text-xl font-bold"
+              onClick={() => setShowSummaryModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h2 className="text-2xl font-bold mb-4 text-foreground">Note Summary</h2>
+            <div className="text-muted-foreground whitespace-pre-line">
+              {summaryContent}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
