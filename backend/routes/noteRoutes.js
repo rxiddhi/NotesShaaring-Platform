@@ -6,6 +6,7 @@ const Note = require("../models/Note");
 const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
+const { estimateDifficulty } = require("../utils/difficultyEstimator");
 
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
@@ -19,6 +20,9 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
     // Use Cloudinary URL if available, otherwise fallback to local path
     const fileUrl = req.file.secure_url || req.file.url || req.file.path;
 
+    // Estimate difficulty
+    const difficulty = estimateDifficulty({ title, description });
+
     const newNote = new Note({
       title,
       subject,
@@ -28,6 +32,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
       downloadedBy: [],
       downloadCount: 0,
       likedBy: [],
+      difficulty,
     });
 
     await newNote.save();

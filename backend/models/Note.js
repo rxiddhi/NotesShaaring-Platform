@@ -47,7 +47,12 @@ const noteSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     }
-  ]
+  ],
+  difficulty: {
+    type: String,
+    trim: true,
+    default: undefined
+  }
 }, {
   timestamps: true
 });
