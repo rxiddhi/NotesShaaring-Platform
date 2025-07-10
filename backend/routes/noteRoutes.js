@@ -6,12 +6,14 @@ const Note = require("../models/Note");
 const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
-const { estimateDifficulty } = require("../utils/difficultyEstimator");
+const { estimateDifficulty } = require("../utils/analyzeDifficulty");
 
+// Upload a note
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
     const { title, subject, description, difficulty } = req.body;
     console.log('Received difficulty:', difficulty);
+
     if (!req.file || !title || !subject) {
       return res
         .status(400)
@@ -58,6 +60,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
   }
 });
 
+// Fetch all notes
 router.get("/", async (req, res) => {
   try {
     const notes = await Note.find()
@@ -88,7 +91,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Favorites route - must come before /:id route
+// Fetch user's favorite notes
 router.get("/favorites", protect, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -103,6 +106,7 @@ router.get("/favorites", protect, async (req, res) => {
   }
 });
 
+// Get a single note
 router.get("/:id", async (req, res) => {
   try {
     const note = await Note.findById(req.params.id).populate(
@@ -117,6 +121,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Track downloads
 router.put("/:id/download", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -137,6 +142,7 @@ router.put("/:id/download", protect, async (req, res) => {
   }
 });
 
+// Like or unlike a note
 router.put("/:id/like", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -164,7 +170,7 @@ router.put("/:id/like", protect, async (req, res) => {
   }
 });
 
-// Favorite/Unfavorite routes
+// Add to favorites
 router.post("/:id/favorite", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -187,6 +193,7 @@ router.post("/:id/favorite", protect, async (req, res) => {
   }
 });
 
+// Remove from favorites
 router.delete("/:id/favorite", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -209,6 +216,7 @@ router.delete("/:id/favorite", protect, async (req, res) => {
   }
 });
 
+// Delete a note
 router.delete("/:id", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -228,6 +236,7 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
+// Edit a note
 router.patch("/:id", protect, upload.single("file"), async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -253,6 +262,7 @@ router.patch("/:id", protect, upload.single("file"), async (req, res) => {
   }
 });
 
+// Download file
 router.get("/:id/download-file", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
