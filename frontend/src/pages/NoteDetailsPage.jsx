@@ -13,6 +13,7 @@ import {
   Upload
 } from 'lucide-react';
 import ReviewList from '../components/Reviews/ReviewList';
+import RelatedVideos from '../components/RelatedVideos';
 import RelatedArticles from '../components/RelatedArticles';
 import ReactModal from 'react-modal';
 
@@ -453,6 +454,10 @@ const NoteDetailsPage = () => {
           <ReviewList noteId={noteId} currentUserId={currentUser?.userId} />
         </div>
 
+        {/* Related Videos Section */}
+        <div className="mt-8 animate-slide-up" style={{ animationDelay: '300ms' }}>
+          <RelatedVideos noteId={noteId} />
+        </div>
         {/* Related Articles Section */}
         <div className="mt-8 animate-slide-up" style={{ animationDelay: '300ms' }}>
           <RelatedArticles noteId={noteId} />
