@@ -48,10 +48,10 @@ const noteSchema = new mongoose.Schema({
       ref: 'User'
     }
   ],
-  difficulty: {
+    difficulty: {
     type: String,
-    trim: true,
-    default: undefined
+    enum: ["Basic", "Intermediate", "Advanced"],
+    default: "Basic"
   }
 }, {
   timestamps: true

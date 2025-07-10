@@ -6,7 +6,7 @@ const Note = require("../models/Note");
 const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
-const { estimateDifficulty } = require("../utils/difficultyEstimator");
+const { estimateDifficulty } = require("../utils/analyzeDifficulty");
 
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
@@ -20,8 +20,8 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
     // Use Cloudinary URL if available, otherwise fallback to local path
     const fileUrl = req.file.secure_url || req.file.url || req.file.path;
 
-    // Estimate difficulty
-    const difficulty = estimateDifficulty({ title, description });
+    // Estimate difficulty using description
+    const difficulty = estimateDifficulty(description);
 
     const newNote = new Note({
       title,
@@ -259,7 +259,7 @@ router.get("/:id/download-file", protect, async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${path.basename(filePath)}"`
+      `attachment; filename=\"${path.basename(filePath)}\"`
     );
 
     const fileStream = fs.createReadStream(filePath);
