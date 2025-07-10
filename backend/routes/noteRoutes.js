@@ -8,9 +8,12 @@ const path = require("path");
 const fs = require("fs");
 const { estimateDifficulty } = require("../utils/analyzeDifficulty");
 
+// Upload a note
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
-    const { title, subject, description } = req.body;
+    const { title, subject, description, difficulty } = req.body;
+    console.log('Received difficulty:', difficulty);
+
     if (!req.file || !title || !subject) {
       return res
         .status(400)
@@ -20,8 +23,18 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
     // Use Cloudinary URL if available, otherwise fallback to local path
     const fileUrl = req.file.secure_url || req.file.url || req.file.path;
 
-    // Estimate difficulty using description
-    const difficulty = estimateDifficulty(description);
+    // Use provided difficulty or estimate
+    let finalDifficulty = difficulty;
+    if (
+      !finalDifficulty ||
+      !["Basic", "Intermediate", "Advanced"].includes(finalDifficulty)
+    ) {
+      const est = estimateDifficulty({ title, description });
+      if (est === "Easy") finalDifficulty = "Basic";
+      else if (est === "Medium") finalDifficulty = "Intermediate";
+      else if (est === "Hard") finalDifficulty = "Advanced";
+      else finalDifficulty = undefined;
+    }
 
     const newNote = new Note({
       title,
@@ -32,7 +45,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
       downloadedBy: [],
       downloadCount: 0,
       likedBy: [],
-      difficulty,
+      difficulty: finalDifficulty,
     });
 
     await newNote.save();
@@ -47,6 +60,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
   }
 });
 
+// Fetch all notes
 router.get("/", async (req, res) => {
   try {
     const notes = await Note.find()
@@ -77,7 +91,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Favorites route - must come before /:id route
+// Fetch user's favorite notes
 router.get("/favorites", protect, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -92,6 +106,7 @@ router.get("/favorites", protect, async (req, res) => {
   }
 });
 
+// Get a single note
 router.get("/:id", async (req, res) => {
   try {
     const note = await Note.findById(req.params.id).populate(
@@ -106,6 +121,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Track downloads
 router.put("/:id/download", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -126,6 +142,7 @@ router.put("/:id/download", protect, async (req, res) => {
   }
 });
 
+// Like or unlike a note
 router.put("/:id/like", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -153,7 +170,7 @@ router.put("/:id/like", protect, async (req, res) => {
   }
 });
 
-// Favorite/Unfavorite routes
+// Add to favorites
 router.post("/:id/favorite", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -176,6 +193,7 @@ router.post("/:id/favorite", protect, async (req, res) => {
   }
 });
 
+// Remove from favorites
 router.delete("/:id/favorite", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -198,6 +216,7 @@ router.delete("/:id/favorite", protect, async (req, res) => {
   }
 });
 
+// Delete a note
 router.delete("/:id", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -217,6 +236,7 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
+// Edit a note
 router.patch("/:id", protect, upload.single("file"), async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -232,6 +252,7 @@ router.patch("/:id", protect, upload.single("file"), async (req, res) => {
     if (req.body.subject) note.subject = req.body.subject;
     if (req.body.description) note.description = req.body.description;
     if (req.file) note.fileUrl = req.file.path;
+    if (req.body.difficulty) note.difficulty = req.body.difficulty;
 
     await note.save();
     res.status(200).json({ message: "Note updated successfully", note });
@@ -241,6 +262,7 @@ router.patch("/:id", protect, upload.single("file"), async (req, res) => {
   }
 });
 
+// Download file
 router.get("/:id/download-file", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -259,7 +281,7 @@ router.get("/:id/download-file", protect, async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=\"${path.basename(filePath)}\"`
+      `attachment; filename="${path.basename(filePath)}"`
     );
 
     const fileStream = fs.createReadStream(filePath);
