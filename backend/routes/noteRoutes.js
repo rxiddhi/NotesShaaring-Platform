@@ -6,13 +6,14 @@ const Note = require("../models/Note");
 const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
-const { estimateDifficulty } = require("../utils/analyzeDifficulty");
+const { estimateDifficulty } = require("../utils/difficultyEstimator");
+const { getRelatedArticles } = require("../utils/googleSearchApi");
 
 // Upload a note
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
     const { title, subject, description, difficulty } = req.body;
-    console.log('Received difficulty:', difficulty);
+    console.log("Received difficulty:", difficulty);
 
     if (!req.file || !title || !subject) {
       return res
@@ -20,10 +21,8 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
         .json({ message: "File, title, and subject are required" });
     }
 
-    // Use Cloudinary URL if available, otherwise fallback to local path
     const fileUrl = req.file.secure_url || req.file.url || req.file.path;
 
-    // Use provided difficulty or estimate
     let finalDifficulty = difficulty;
     if (
       !finalDifficulty ||
@@ -289,6 +288,25 @@ router.get("/:id/download-file", protect, async (req, res) => {
   } catch (err) {
     console.error("File download error:", err);
     res.status(500).json({ message: "Server error while downloading file" });
+  }
+});
+
+// Fetch related articles for a note
+router.get("/:id/related-articles", async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: "Note not found" });
+
+    const relatedArticles = await getRelatedArticles(note);
+    res.status(200).json({
+      message: "Related articles fetched successfully",
+      data: relatedArticles,
+    });
+  } catch (err) {
+    console.error("Fetch related articles error:", err);
+    res
+      .status(500)
+      .json({ message: "Server error while fetching related articles" });
   }
 });
 

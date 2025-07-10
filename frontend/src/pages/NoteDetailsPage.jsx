@@ -13,6 +13,7 @@ import {
   Upload
 } from 'lucide-react';
 import ReviewList from '../components/Reviews/ReviewList';
+import RelatedArticles from '../components/RelatedArticles';
 import ReactModal from 'react-modal';
 
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -450,6 +451,11 @@ const NoteDetailsPage = () => {
         {/* Reviews Section */}
         <div className="mt-8 animate-slide-up" style={{ animationDelay: '200ms' }}>
           <ReviewList noteId={noteId} currentUserId={currentUser?.userId} />
+        </div>
+
+        {/* Related Articles Section */}
+        <div className="mt-8 animate-slide-up" style={{ animationDelay: '300ms' }}>
+          <RelatedArticles noteId={noteId} />
         </div>
 
         {/* Edit Note Modal */}
