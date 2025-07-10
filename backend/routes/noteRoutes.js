@@ -7,6 +7,7 @@ const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
 const { estimateDifficulty } = require("../utils/difficultyEstimator");
+const { getRelatedVideos } = require("../utils/youtubeApi");
 const { getRelatedArticles } = require("../utils/googleSearchApi");
 
 // Upload a note
@@ -291,6 +292,26 @@ router.get("/:id/download-file", protect, async (req, res) => {
   }
 });
 
+// Get related YouTube videos for a note
+router.get("/:id/related-videos", async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    const relatedVideos = await getRelatedVideos(note);
+    
+    res.status(200).json({
+      message: "Related videos fetched successfully",
+      data: relatedVideos
+    });
+  } catch (err) {
+    console.error("Fetch related videos error:", err);
+    res.status(500).json({ message: "Server error while fetching related videos" });
+  }
+});
+
 // Fetch related articles for a note
 router.get("/:id/related-articles", async (req, res) => {
   try {
@@ -304,9 +325,7 @@ router.get("/:id/related-articles", async (req, res) => {
     });
   } catch (err) {
     console.error("Fetch related articles error:", err);
-    res
-      .status(500)
-      .json({ message: "Server error while fetching related articles" });
+    res.status(500).json({ message: "Server error while fetching related articles" });
   }
 });
 
