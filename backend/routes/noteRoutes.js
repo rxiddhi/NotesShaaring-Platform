@@ -7,12 +7,13 @@ const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
 const { estimateDifficulty } = require("../utils/difficultyEstimator");
+const summarizeText = require("../utils/summarizer");
 
-// Upload a note
+
 router.post("/", protect, upload.single("file"), async (req, res) => {
   try {
-    const { title, subject, description, difficulty } = req.body;
-    console.log("Received difficulty:", difficulty);
+    const { title, subject, description, difficulty: incomingDifficulty } = req.body;
+    console.log("Received difficulty:", incomingDifficulty);
 
     if (!req.file || !title || !subject) {
       return res
@@ -20,11 +21,31 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
         .json({ message: "File, title, and subject are required" });
     }
 
-    // Use Cloudinary URL if available, otherwise fallback to local path
     const fileUrl = req.file.secure_url || req.file.url || req.file.path;
 
-    // Estimate difficulty
-    const difficulty = estimateDifficulty({ title, description });
+    function mapDifficulty(level) {
+      if (level === "Easy") return "Basic";
+      if (level === "Medium") return "Intermediate";
+      if (level === "Hard") return "Advanced";
+      return level;
+    }
+
+    let finalDifficulty = incomingDifficulty;
+    if (!finalDifficulty) {
+      finalDifficulty = estimateDifficulty({ title, description });
+    }
+    finalDifficulty = mapDifficulty(finalDifficulty);
+
+
+    let summary = "";
+    try {
+      const fullText = description && description.length > 0 ? description : `${title} ${subject}`;
+      summary = await summarizeText(fullText);
+      console.log("[AI SUMMARY] Generated summary:", summary);
+    } catch (summaryErr) {
+      console.error("[AI SUMMARY] Error generating summary:", summaryErr);
+      summary = "Summary not available";
+    }
 
     const newNote = new Note({
       title,
@@ -36,6 +57,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
       downloadCount: 0,
       likedBy: [],
       difficulty: finalDifficulty,
+      summary,
     });
 
     await newNote.save();
@@ -50,7 +72,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
   }
 });
 
-// Fetch all notes
+
 router.get("/", async (req, res) => {
   try {
     const notes = await Note.find()
@@ -81,7 +103,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Favorites route - must come before /:id route
 router.get("/favorites", protect, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -96,7 +117,7 @@ router.get("/favorites", protect, async (req, res) => {
   }
 });
 
-// Get a single note
+
 router.get("/:id", async (req, res) => {
   try {
     const note = await Note.findById(req.params.id).populate(
@@ -111,7 +132,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Track downloads
+
 router.put("/:id/download", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -132,7 +153,7 @@ router.put("/:id/download", protect, async (req, res) => {
   }
 });
 
-// Like or unlike a note
+
 router.put("/:id/like", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -160,7 +181,7 @@ router.put("/:id/like", protect, async (req, res) => {
   }
 });
 
-// Favorite/Unfavorite routes
+
 router.post("/:id/favorite", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -183,7 +204,7 @@ router.post("/:id/favorite", protect, async (req, res) => {
   }
 });
 
-// Remove from favorites
+
 router.delete("/:id/favorite", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -206,7 +227,7 @@ router.delete("/:id/favorite", protect, async (req, res) => {
   }
 });
 
-// Delete a note
+
 router.delete("/:id", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -226,7 +247,7 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
-// Edit a note
+
 router.patch("/:id", protect, upload.single("file"), async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -252,7 +273,7 @@ router.patch("/:id", protect, upload.single("file"), async (req, res) => {
   }
 });
 
-// Download file
+
 router.get("/:id/download-file", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
