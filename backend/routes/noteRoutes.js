@@ -7,8 +7,6 @@ const Review = require("../models/Review");
 const path = require("path");
 const fs = require("fs");
 const { estimateDifficulty } = require("../utils/difficultyEstimator");
-const { getRelatedVideos } = require("../utils/youtubeApi");
-const { getRelatedArticles } = require("../utils/googleSearchApi");
 
 // Upload a note
 router.post("/", protect, upload.single("file"), async (req, res) => {
@@ -22,19 +20,11 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
         .json({ message: "File, title, and subject are required" });
     }
 
+    // Use Cloudinary URL if available, otherwise fallback to local path
     const fileUrl = req.file.secure_url || req.file.url || req.file.path;
 
-    let finalDifficulty = difficulty;
-    if (
-      !finalDifficulty ||
-      !["Basic", "Intermediate", "Advanced"].includes(finalDifficulty)
-    ) {
-      const est = estimateDifficulty({ title, description });
-      if (est === "Easy") finalDifficulty = "Basic";
-      else if (est === "Medium") finalDifficulty = "Intermediate";
-      else if (est === "Hard") finalDifficulty = "Advanced";
-      else finalDifficulty = undefined;
-    }
+    // Estimate difficulty
+    const difficulty = estimateDifficulty({ title, description });
 
     const newNote = new Note({
       title,
@@ -91,7 +81,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Fetch user's favorite notes
+// Favorites route - must come before /:id route
 router.get("/favorites", protect, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -170,7 +160,7 @@ router.put("/:id/like", protect, async (req, res) => {
   }
 });
 
-// Add to favorites
+// Favorite/Unfavorite routes
 router.post("/:id/favorite", protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -292,41 +282,7 @@ router.get("/:id/download-file", protect, async (req, res) => {
   }
 });
 
-// Get related YouTube videos for a note
-router.get("/:id/related-videos", async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id);
-    if (!note) {
-      return res.status(404).json({ message: "Note not found" });
-    }
-
-    const relatedVideos = await getRelatedVideos(note);
-    
-    res.status(200).json({
-      message: "Related videos fetched successfully",
-      data: relatedVideos
-    });
-  } catch (err) {
-    console.error("Fetch related videos error:", err);
-    res.status(500).json({ message: "Server error while fetching related videos" });
-  }
-});
-
-// Fetch related articles for a note
-router.get("/:id/related-articles", async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: "Note not found" });
-
-    const relatedArticles = await getRelatedArticles(note);
-    res.status(200).json({
-      message: "Related articles fetched successfully",
-      data: relatedArticles,
-    });
-  } catch (err) {
-    console.error("Fetch related articles error:", err);
-    res.status(500).json({ message: "Server error while fetching related articles" });
-  }
-});
-
 module.exports = router;
+
+
+

@@ -13,7 +13,6 @@ export default function Footer() {
         : 'linear-gradient(135deg, #f0f9ff 0%, #71cfc9 50%, #bae6fd 100%)'
     }}>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:justify-between md:items-start gap-8">
-        {/* Branding and About */}
         <div className="flex-1 flex flex-col items-start gap-3 min-w-[220px]">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-foreground rounded-xl flex items-center justify-center shadow-lg">
