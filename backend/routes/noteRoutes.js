@@ -38,14 +38,15 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
 
 
     let summary = "";
-    try {
-      const fullText = description && description.length > 0 ? description : `${title} ${subject}`;
-      summary = await summarizeText(fullText);
-      console.log("[AI SUMMARY] Generated summary:", summary);
-    } catch (summaryErr) {
-      console.error("[AI SUMMARY] Error generating summary:", summaryErr);
-      summary = "Summary not available";
-    }
+try {
+  console.log("🔥 Calling summarizeText with fileUrl:", fileUrl);
+  summary = await summarizeText(fileUrl); 
+  console.log("[AI SUMMARY] Generated summary:", summary);
+} catch (summaryErr) {
+  console.error("[AI SUMMARY] Error generating summary:", summaryErr);
+  summary = "Summary not available";
+}
+
 
     const newNote = new Note({
       title,
@@ -66,10 +67,12 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
       message: "Note uploaded successfully",
       note: newNote,
     });
-  } catch (err) {
-    console.error("Upload error:", err);
-    res.status(500).json({ message: "Server error while uploading note" });
-  }
+ } catch (error) {
+  console.error('🔥 FULL ERROR:', error);
+  console.error('🔥 STACK TRACE:', error.stack);
+  res.status(500).json({ error: error.message || 'Internal Server Error' });
+}
+
 });
 
 
@@ -97,10 +100,12 @@ router.get("/", async (req, res) => {
     });
 
     res.status(200).json({ notes: notesWithExtras });
-  } catch (err) {
-    console.error("Fetch notes error:", err);
-    res.status(500).json({ message: "Failed to fetch notes" });
-  }
+  } catch (error) {
+  console.error('🔥 FULL ERROR:', error);
+  console.error('🔥 STACK TRACE:', error.stack);
+  res.status(500).json({ error: error.message || 'Internal Server Error' });
+}
+
 });
 
 router.get("/favorites", protect, async (req, res) => {
@@ -111,10 +116,12 @@ router.get("/favorites", protect, async (req, res) => {
       .populate("uploadedBy", "username email");
 
     res.status(200).json(notes);
-  } catch (err) {
-    console.error("Fetch favorites error:", err);
-    res.status(500).json({ message: "Failed to fetch favorites" });
-  }
+  } catch (error) {
+  console.error('🔥 FULL ERROR:', error);
+  console.error('🔥 STACK TRACE:', error.stack);
+  res.status(500).json({ error: error.message || 'Internal Server Error' });
+}
+
 });
 
 
@@ -126,10 +133,12 @@ router.get("/:id", async (req, res) => {
     );
     if (!note) return res.status(404).json({ message: "Note not found" });
     res.status(200).json({ note });
-  } catch (err) {
-    console.error("Fetch single note error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+  } catch (error) {
+  console.error('🔥 FULL ERROR:', error);
+  console.error('🔥 STACK TRACE:', error.stack);
+  res.status(500).json({ error: error.message || 'Internal Server Error' });
+}
+
 });
 
 

@@ -1,15 +1,11 @@
 const axios = require('axios');
 
-// Google Custom Search API configuration
 const GOOGLE_SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY;
 const GOOGLE_CUSTOM_SEARCH_ENGINE_ID = process.env.GOOGLE_CUSTOM_SEARCH_ENGINE_ID;
 const GOOGLE_SEARCH_API_BASE_URL = 'https://www.googleapis.com/customsearch/v1';
 
-// Extract keywords from note content for educational article search
 function extractArticleKeywords(title = '', description = '', subject = '') {
   const text = `${title} ${description} ${subject}`.toLowerCase();
-  
-  // Educational keywords that work well for article search
   const educationalKeywords = [
     'tutorial', 'guide', 'how to', 'explanation', 'introduction',
     'basics', 'fundamentals', 'concepts', 'examples', 'practice',
@@ -19,7 +15,6 @@ function extractArticleKeywords(title = '', description = '', subject = '') {
     'learning', 'education', 'study', 'research', 'analysis'
   ];
   
-  // Filter out common stop words
   const stopWords = new Set([
     'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
     'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
@@ -34,7 +29,6 @@ function extractArticleKeywords(title = '', description = '', subject = '') {
     word.length > 2 && !stopWords.has(word)
   );
   
-  // Count word frequency
   const wordCount = {};
   filteredWords.forEach(word => {
     wordCount[word] = (wordCount[word] || 0) + 1;
