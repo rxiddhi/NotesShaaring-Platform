@@ -83,6 +83,8 @@ const NotesBrowsingPage = () => {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryContent, setSummaryContent] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
+  const NOTES_PER_PAGE = 8; // or any number you want per page
+
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -137,15 +139,22 @@ const NotesBrowsingPage = () => {
         }
       });
       
-      setNotes(filteredNotes);
-      setTotalPages(1);
+      const total = filteredNotes.length;
+setTotalPages(Math.ceil(total / NOTES_PER_PAGE));
+
+// Slice the notes for current page
+const startIndex = (currentPage - 1) * NOTES_PER_PAGE;
+const paginatedNotes = filteredNotes.slice(startIndex, startIndex + NOTES_PER_PAGE);
+setNotes(paginatedNotes);
+
     } catch (error) {
       console.error('Error fetching notes:', error);
       setError('Failed to load notes. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, selectedSubject, sortBy, selectedDifficulty]);
+  }, [searchTerm, selectedSubject, sortBy, selectedDifficulty, currentPage]);
+
 
   const fetchCurrentUser = useCallback(async () => {
     try {
@@ -183,7 +192,8 @@ const NotesBrowsingPage = () => {
     fetchNotes();
     fetchFavorites();
     fetchCurrentUser();
-  }, [fetchNotes, fetchFavorites, fetchCurrentUser]);
+ }, [fetchNotes, fetchFavorites, fetchCurrentUser, currentPage]);
+
 
   const handleDownload = async (noteId) => {
     try {
