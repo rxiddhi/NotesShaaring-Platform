@@ -2,7 +2,7 @@
 
 A full-stack web application where students can **upload**, **browse**, **search**, and **review** academic notes.
 
-This project was collaboratively built by a team of 5 students from **Newton School of Technology**, under the guidance of faculty members and with support from the **Software Development Club (NST-SDC)**. What began as a summer open-source initiative for solving students **real-world problem** became a hands-on way to strengthen our skills in frontend, backend, databases, deployment, and teamwork.
+This project was collaboratively built by a team of 6 students from **Newton School of Technology**, under the guidance of faculty members and with support from the **Software Development Club (NST-SDC)**. What began as a summer open-source initiative for solving students **real-world problem** became a hands-on way to strengthen our skills in frontend, backend, databases, deployment, and teamwork.
 
 🔗 [Live Website](https://notes-shaaring-platform.vercel.app/)
 
@@ -25,7 +25,7 @@ This project was collaboratively built by a team of 5 students from **Newton Sch
 | Frontend     | React, Tailwind CSS              |
 | Backend      | Node.js, Express.js              |
 | Database     | MongoDB (Mongoose)               |
-| Authentication | Firebase Auth                  |
+| Authentication | Google Authentication              |
 | Deployment   | Vercel (Frontend), Render (Backend) |
 
 ---
