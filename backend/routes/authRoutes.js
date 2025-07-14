@@ -4,10 +4,8 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const passport = require("passport");
 const authMiddleware = require("../middlewares/authMiddleware");
-const sendEmail = require("../utils/sendEmail");
 const fs = require('fs');
 const path = require('path');
-
 const User = require("../models/User");
 const Note = require("../models/Note");
 const Review = require("../models/Review");
@@ -222,74 +220,6 @@ router.get("/dashboard-stats", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("Dashboard stats error:", err);
     res.status(500).json({ message: "Failed to load dashboard stats" });
-  }
-});
-
-router.post("/forgot-password", async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ message: "Email is required" });
-
-  try {
-    const user = await User.findOne({ email: email.trim().toLowerCase() });
-    if (!user) {
-      return res
-        .status(200)
-        .json({
-          message: "If that email is registered, a reset link will be sent.",
-        });
-    }
-
-    const token = crypto.randomBytes(32).toString("hex");
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-    await user.save();
-
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-    const subject = "Password Reset - Notes Sharing Platform";
-    const html = `
-      <p>Hello ${user.username || "user"},</p>
-      <p>You requested a password reset.</p>
-      <p><a href="${resetLink}" style="color:#6366F1; text-decoration:underline;">Click here to reset your password</a></p>
-      <p>This link is valid for 1 hour. If you did not request it, ignore this email.</p>
-    `;
-
-    await sendEmail({ to: user.email, subject, html });
-    res
-      .status(200)
-      .json({
-        message: "If that email is registered, a reset link will be sent.",
-      });
-  } catch (err) {
-    console.error("Forgot password error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.post("/reset-password/:token", async (req, res) => {
-  const { token } = req.params;
-  const { password } = req.body;
-
-  if (!password)
-    return res.status(400).json({ message: "Password is required" });
-
-  try {
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() },
-    });
-
-    if (!user)
-      return res.status(400).json({ message: "Invalid or expired token" });
-
-    user.password = await bcrypt.hash(password, 10);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
-
-    res.status(200).json({ message: "Password has been reset successfully" });
-  } catch (err) {
-    console.error("Reset password error:", err);
-    res.status(500).json({ message: "Server error" });
   }
 });
 
