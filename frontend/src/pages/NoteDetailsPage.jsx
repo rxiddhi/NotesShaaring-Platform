@@ -16,6 +16,8 @@ import ReviewList from '../components/Reviews/ReviewList';
 import RelatedVideos from '../components/RelatedVideos';
 import RelatedArticles from '../components/RelatedArticles';
 import ReactModal from 'react-modal';
+import BookModeViewer from './BookModeViewer';
+
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -34,6 +36,9 @@ const NoteDetailsPage = () => {
   const [editError, setEditError] = useState('');
   const [editFile, setEditFile] = useState(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [showViewer, setShowViewer] = useState(false);
+
+  
 
   const fetchNote = useCallback(async () => {
     try {
@@ -323,8 +328,6 @@ const NoteDetailsPage = () => {
               </div>
             )}
           </div>
-
-          {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="text-center p-4 bg-accent rounded-lg">
               <div className="text-2xl font-bold text-foreground">{note.downloadCount || 0}</div>
@@ -345,45 +348,54 @@ const NoteDetailsPage = () => {
               <div className="text-xs text-foreground">Rating</div>
             </div>
           </div>
-          {note.fileUrl && (
-            <div className="flex justify-center mb-8 gap-4">
-              <button
-                onClick={handleDownload}
-                className="bg-gradient-primary text-white px-8 py-4 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated flex items-center space-x-2"
-              >
-                <Download className="w-5 h-5" />
-                <span>Download Note</span>
-              </button>
-              <button
-                onClick={async () => {
-                  const token = localStorage.getItem('token');
-                  try {
-                    const response = await fetch(note.fileUrl, {
-                      headers: { Authorization: `Bearer ${token}` }
-                    });
-                    if (!response.ok) throw new Error('Failed to fetch PDF');
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-                    const newWindow = window.open();
-                    if (newWindow) {
-                      newWindow.document.write(
-                        `<iframe src="${url}" frameborder="0" style="width:100vw;height:100vh;" allowfullscreen></iframe>`
-                      );
-                    } else {
-                      alert('Please allow popups for this site');
-                    }
-                    setTimeout(() => window.URL.revokeObjectURL(url), 10000);
-                  } catch {
-                    alert('Could not open PDF.');
-                  }
-                }}
-                className="border-2 border-primary text-primary px-8 py-4 rounded-lg font-medium hover:bg-primary/10 transition-all duration-200 hover-scale flex items-center space-x-2"
-              >
-                <BookOpen className="w-5 h-5" />
-                <span>View Note</span>
-              </button>
-            </div>
-          )}
+         {note.fileUrl && (
+  <div className="flex justify-center mb-8 gap-4 flex-wrap">
+    <button
+      onClick={handleDownload}
+      className="bg-gradient-primary text-white px-8 py-4 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover-scale btn-animated flex items-center space-x-2"
+    >
+      <Download className="w-5 h-5" />
+      <span>Download Note</span>
+    </button>
+
+    <button
+      onClick={async () => {
+        const token = localStorage.getItem('token');
+        try {
+          const response = await fetch(note.fileUrl, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (!response.ok) throw new Error('Failed to fetch PDF');
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+          const newWindow = window.open();
+          if (newWindow) {
+            newWindow.document.write(
+              `<iframe src="${url}" frameborder="0" style="width:100vw;height:100vh;" allowfullscreen></iframe>`
+            );
+          } else {
+            alert('Please allow popups for this site');
+          }
+          setTimeout(() => window.URL.revokeObjectURL(url), 10000);
+        } catch {
+          alert('Could not open PDF.');
+        }
+      }}
+      className="border-2 border-primary text-primary px-8 py-4 rounded-lg font-medium hover:bg-primary/10 transition-all duration-200 hover-scale flex items-center space-x-2"
+    >
+      <BookOpen className="w-5 h-5" />
+      <span>View Note</span>
+    </button>
+
+    <button
+  onClick={() => setShowViewer(true)}
+  className="border-2 border-primary text-primary px-8 py-4 rounded-lg font-medium hover:bg-primary/10 transition-all duration-200 hover-scale flex items-center space-x-2">
+  <BookOpen className="w-5 h-5" />
+  <span>Book Mode</span>
+  </button>
+
+  </div>
+)}
           {note.fileUrl && (
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-foreground mb-4">File Information</h3>
@@ -416,7 +428,6 @@ const NoteDetailsPage = () => {
                   ⚠️ <strong>Note:</strong> Some older files may not be immediately accessible. If download fails, please try again later or contact the uploader.
                 </p>
               </div>
-              {/* Embedded PDF Viewer */}
               <div className="mt-6 w-full flex justify-center">
                 {pdfBlobUrl ? (
                   <iframe
@@ -562,9 +573,15 @@ const NoteDetailsPage = () => {
                 {editLoading ? <Loader className="w-5 h-5 animate-spin" /> : <Edit className="w-5 h-5" />}
                 {editLoading ? 'Saving...' : 'Save Changes'}
               </button>
+              
             </div>
           </form>
         </ReactModal>
+    {showViewer && (
+   <BookModeViewer fileUrl={pdfBlobUrl} onClose={() => setShowViewer(false)} />
+
+)}
+
       </div>
     </div>
   );
