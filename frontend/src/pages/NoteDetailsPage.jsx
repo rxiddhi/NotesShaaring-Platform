@@ -152,8 +152,6 @@ const NoteDetailsPage = () => {
         if (response.ok) {
 
           const blob = await response.blob();
-          
-          // Create download link
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
@@ -259,7 +257,6 @@ const NoteDetailsPage = () => {
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
         <button
           onClick={() => navigate('/browse')}
           className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors mb-6 animate-slide-up"
@@ -267,10 +264,7 @@ const NoteDetailsPage = () => {
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Browse</span>
         </button>
-
-        {/* Note Details */}
         <div className="card-interactive p-8 animate-slide-up" style={{ animationDelay: '100ms' }}>
-          {/* Header */}
           <div className="flex justify-between items-start mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
@@ -302,8 +296,6 @@ const NoteDetailsPage = () => {
                 <p className="text-muted-foreground leading-relaxed mb-6">{note.description}</p>
               )}
             </div>
-
-            {/* Owner Actions */}
             {isOwner && (
               <div className="flex gap-2 ml-4">
                 <button
@@ -318,7 +310,6 @@ const NoteDetailsPage = () => {
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
-                {/* Re-upload button if note has reviews */}
                 {note.reviewCount > 0 && (
                   <button
                     onClick={() => setShowEditModal(true)}
@@ -354,8 +345,6 @@ const NoteDetailsPage = () => {
               <div className="text-xs text-foreground">Rating</div>
             </div>
           </div>
-
-          {/* Download and View Buttons */}
           {note.fileUrl && (
             <div className="flex justify-center mb-8 gap-4">
               <button
@@ -395,8 +384,6 @@ const NoteDetailsPage = () => {
               </button>
             </div>
           )}
-
-          {/* File Information */}
           {note.fileUrl && (
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-foreground mb-4">File Information</h3>
@@ -449,22 +436,15 @@ const NoteDetailsPage = () => {
             </div>
           )}
         </div>
-
-        {/* Reviews Section */}
         <div className="mt-8 animate-slide-up" style={{ animationDelay: '200ms' }}>
           <ReviewList noteId={noteId} currentUserId={currentUser?.userId} />
         </div>
-
-        {/* Related Videos Section */}
         <div className="mt-8 animate-slide-up" style={{ animationDelay: '300ms' }}>
           <RelatedVideos noteId={noteId} />
         </div>
-        {/* Related Articles Section */}
         <div className="mt-8 animate-slide-up" style={{ animationDelay: '300ms' }}>
           <RelatedArticles noteId={noteId} />
         </div>
-
-        {/* Edit Note Modal */}
         <ReactModal
           isOpen={showEditModal}
           onRequestClose={() => setShowEditModal(false)}

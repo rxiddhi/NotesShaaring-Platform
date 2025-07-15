@@ -23,7 +23,6 @@ const NotesPage = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
-    // Always decode user from token on mount
     const token = localStorage.getItem('token');
     if (token) {
       try {
@@ -62,8 +61,6 @@ const NotesPage = () => {
       setEditError("");
     }
   }, [editModalOpen, noteToEdit]);
-
-  // Only filter notes after currentUserId is set
   const uploadedNotes = currentUserId
     ? notes.filter(note => {
         if (!note.uploadedBy) return false;
@@ -121,7 +118,7 @@ const NotesPage = () => {
       await axios.delete(`${API_BASE_URL}/notes/${noteId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      await fetchNotes(); // Refresh notes after delete
+      await fetchNotes();
     } catch (err) {
       alert(err.response?.data?.message || 'Delete failed.');
     } finally {
@@ -153,7 +150,7 @@ const NotesPage = () => {
       });
       setEditModalOpen(false);
       setNoteToEdit(null);
-      await fetchNotes(); // Refresh notes after edit
+      await fetchNotes(); 
     } catch (err) {
       setEditError(err.response?.data?.message || "Failed to update note.");
     } finally {
