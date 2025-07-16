@@ -49,9 +49,7 @@ export default function DoubtsPage() {
     subject: ''
   });
 
-  const [answerData, setAnswerData] = useState({
-    text: ''
-  });
+  const [answerData, setAnswerData] = useState({});
 
     useEffect(() => {
     fetchDoubts();
@@ -145,7 +143,7 @@ export default function DoubtsPage() {
   };
 
   const handleAnswerSubmit = async (doubtId) => {
-    if (!answerData.text.trim()) {
+    if (!answerData[doubtId] || !answerData[doubtId].trim()) {
       alert('Please enter an answer');
       return;
     }
@@ -163,7 +161,7 @@ export default function DoubtsPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(answerData)
+        body: JSON.stringify(answerData[doubtId])
       });
 
       if (response.ok) {
@@ -173,7 +171,7 @@ export default function DoubtsPage() {
             ? { ...doubt, answers: [...(doubt.answers || []), newAnswer.answer] }
             : doubt
         ));
-        setAnswerData({ text: '' });
+        setAnswerData((prev) => ({ ...prev, [doubtId]: '' }));
       } else {
         const errorData = await response.json();
         alert(errorData.message || 'Failed to create answer');
@@ -528,8 +526,8 @@ export default function DoubtsPage() {
                       <input
                         type="text"
                         placeholder="Write your answer..."
-                        value={answerData.text}
-                        onChange={(e) => setAnswerData({ text: e.target.value })}
+                        value={answerData[doubt._id] || ''}
+                        onChange={(e) => setAnswerData((prev) => ({ ...prev, [doubt._id]: e.target.value }))}
                         className="flex-1 px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                       />
                       <button
