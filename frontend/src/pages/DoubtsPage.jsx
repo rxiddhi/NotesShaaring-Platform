@@ -161,7 +161,7 @@ export default function DoubtsPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(answerData[doubtId])
+        body: JSON.stringify({ text: answerData[doubtId] })
       });
 
       if (response.ok) {
