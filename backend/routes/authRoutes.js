@@ -124,7 +124,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     session: false,
-    failureRedirect: "https://notes-shaaring-platform.vercel.app/auth-error?reason=user_not_found",
+    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth-error?reason=user_not_found`,
   }),
   async (req, res) => {
     const state = req.query.state;
